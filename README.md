@@ -4,8 +4,12 @@
 
 This is an early functional prototype, not a licensed commercial music-streaming catalog. It includes an original, procedurally synthesized demo library so the player works without copying third-party recordings.
 
+## Visual identity
+
+Drawing Music is part of the Drawing ecosystem, **but owns a completely independent interface, palette, typography, visual motifs and player experience**. Cross-service entry points are integrations, not shared themes. Current visual style is a provisional music-first direction and can be refined.
+
 ## Features (prototype)
-- Responsive cosmic/glass design inspired by Drawing Verse
+- Independent DMUSIC visual design (charcoal + lime, waveform and vinyl motifs); not a Drawing Verse theme skin
 - Play, pause, previous/next, shuffle, repeat, seek and volume
 - Search and discover original demo tracks
 - Local liked tracks and user-created playlists (stored in this browser)
