@@ -42,6 +42,7 @@ export default function MusicHome() {
   const [expanded, setExpanded] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>([]);
   const [genreFilter, setGenreFilter] = useState("전체");
+  const [addingTrackId, setAddingTrackId] = useState<string | null>(null);
 
   const active = DEMO_TRACKS.find(track => track.id === activeId) || DEMO_TRACKS[0];
   const selectedPlaylist = playlists.find(list => list.id === playlistId);
@@ -162,27 +163,36 @@ export default function MusicHome() {
     const name = newName.trim();
     if (!name) return;
     const id = "list-" + Date.now().toString(36);
-    setPlaylists(old => [...old, { id, name: name.slice(0, 50), trackIds: [] }]);
+    setPlaylists(old => [...old, { id, name: name.slice(0, 50), trackIds: addingTrackId ? [addingTrackId] : [] }]);
     setPlaylistId(id);
     setView("playlist");
     setCreating(false);
+    setAddingTrackId(null);
     setNewName("");
+    setNotice(addingTrackId ? "새 재생목록을 만들고 곡을 추가했어요." : "새 재생목록이 만들어졌어요.");
   };
 
   const addToPlaylist = (id: string) => {
-    const targetId = view === "playlist" && selectedPlaylist ? selectedPlaylist.id : playlists[0]?.id;
-    if (!targetId) {
-      const generatedId = "list-" + Date.now().toString(36);
-      setPlaylists([{ id: generatedId, name: "My Mix", trackIds: [id] }]);
-      setPlaylistId(generatedId);
-      setNotice("My Mix 재생목록을 만들고 곡을 추가했어!");
+    if (view === "playlist" && selectedPlaylist) {
+      setPlaylists(old => old.map(list => list.id === selectedPlaylist.id
+        ? { ...list, trackIds: list.trackIds.includes(id) ? list.trackIds : [...list.trackIds, id] }
+        : list
+      ));
+      setNotice("재생목록에 추가했어요.");
       return;
     }
+    setAddingTrackId(id);
+    if (playlists.length === 0) setCreating(true);
+  };
+
+  const addSelectedToPlaylist = (targetId: string) => {
+    if (!addingTrackId) return;
     setPlaylists(old => old.map(list => list.id === targetId
-      ? { ...list, trackIds: list.trackIds.includes(id) ? list.trackIds : [...list.trackIds, id] }
+      ? { ...list, trackIds: list.trackIds.includes(addingTrackId) ? list.trackIds : [...list.trackIds, addingTrackId] }
       : list
     ));
-    setNotice("재생목록에 추가했어!");
+    setNotice("재생목록에 추가했어요.");
+    setAddingTrackId(null);
   };
 
   const visibleTracks = useMemo(() => DEMO_TRACKS.filter(track => {
@@ -368,7 +378,7 @@ export default function MusicHome() {
           <footer className="legal-note">오리지널 데모 음악만 제공됩니다. 상업 음원 및 Drawing 계정 연동은 아직 지원하지 않아요.</footer>
           </div>
           <aside className="listening-rail" aria-label="뮤직 사이드 패널">
-            <div className="rail-header"><div><span className="rail-caption">YOUR LISTENING SPACE</span><h2>Now playing<span className="rail-heading-dot">.</span></h2></div><span className="rail-status"><span/> LIVE</span></div>
+            <div className="rail-header"><div><span className="rail-caption">YOUR LISTENING SPACE</span><h2>Now playing<span className="rail-heading-dot">.</span></h2></div><span className={isPlaying ? "rail-status" : "rail-status paused"}><span/> {isPlaying ? "PLAYING" : "READY"}</span></div>
             <button className="rail-cover-button" onClick={() => setExpanded(true)} aria-label="현재 재생 곡의 전체 플레이어 열기"><AlbumArt track={active} className="rail-cover" playing={isPlaying}/><span className="rail-cover-overlay"><Maximize2 size={20}/></span></button>
             <div className="rail-now-meta"><div><strong>{active.title}</strong><p>{active.artist} <span>·</span> {active.album}</p></div><button aria-label={liked.includes(active.id) ? "좋아요 취소" : "좋아요"} className={liked.includes(active.id) ? "rail-heart liked" : "rail-heart"} onClick={()=>toggleLiked(active.id)}><Heart size={19} fill={liked.includes(active.id) ? "currentColor" : "none"}/></button></div>
             <div className="rail-wave-wrap"><span className="rail-wave-label">SOUND ACTIVITY</span><div className={isPlaying ? "rail-wave playing" : "rail-wave"} aria-hidden="true">{[26,58,35,78,46,89,39,65,33,82,54,30,72,40,94,52,64,27,81,42,60,36,86,45].map((h,index)=><span key={index} style={{height:h+"%",animationDelay:index*.045+"s"}}/>)}</div><div className="rail-progress"><span style={{width:(progress/active.duration*100)+"%"}} /></div></div>
@@ -422,11 +432,19 @@ export default function MusicHome() {
         onPrevious={previousTrack} onNext={() => nextTrack()} onLike={() => toggleLiked(active.id)}
         onShuffle={() => setShuffle(v => !v)} onRepeat={() => setRepeat(r => r === "off" ? "all" : r === "all" ? "one" : "off")}
         onTrack={track => playTrack(track)}/>} 
+      {addingTrackId && !creating && playlists.length > 0 && <div className="dialog-backdrop" onMouseDown={event => { if(event.target === event.currentTarget) setAddingTrackId(null); }}>
+        <section className="dialog playlist-chooser" role="dialog" aria-modal="true" aria-label="곡을 추가할 재생목록 선택">
+          <div className="dialog-heading"><span><ListMusic size={22}/> 재생목록에 추가</span><button onClick={() => setAddingTrackId(null)} aria-label="닫기"><X size={19}/></button></div>
+          <p>곡을 저장할 재생목록을 선택해 주세요.</p>
+          <div className="chooser-options">{playlists.map(list => <button key={list.id} onClick={() => addSelectedToPlaylist(list.id)}><Disc3 size={19}/><span><strong>{list.name}</strong><small>{list.trackIds.length}곡</small></span>{list.trackIds.includes(addingTrackId) ? <Check size={18}/> : <Plus size={18}/>}</button>)}</div>
+          <button className="chooser-create" onClick={() => {setNewName("");setCreating(true);}}><Plus size={17}/> 새 재생목록 만들기</button>
+        </section>
+      </div>}
       {creating && (
-        <div className="dialog-backdrop" onClick={() => setCreating(false)}>
+        <div className="dialog-backdrop" onClick={() => {setCreating(false);setAddingTrackId(null);}}>
           <form className="dialog" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); createPlaylist(); }}>
             <div className="dialog-heading"><span><ListMusic size={24}/> 새 재생목록</span>
-              <button type="button" onClick={() => setCreating(false)} aria-label="닫기"><X size={20}/></button></div>
+              <button type="button" onClick={() => {setCreating(false);setAddingTrackId(null);}} aria-label="닫기"><X size={20}/></button></div>
             <p>좋아하는 소리를 한 곳에 모아봐.</p>
             <label htmlFor="playlist-name">재생목록 이름</label>
             <input id="playlist-name" autoFocus maxLength={50} placeholder="예: 밤하늘 산책" value={newName} onChange={event => setNewName(event.target.value)}/>
