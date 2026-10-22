@@ -261,42 +261,42 @@ export default function MusicHome() {
         <div className="main-scroll">
           {view === "home" && (
             <>
-              <section className="hero">
-                <div className="hero-deco deco-one"/><div className="hero-deco deco-two"/>
+              <section className="hero" aria-labelledby="hero-title">
                 <div className="hero-content">
-                  <div className="eyebrow"><AudioLines size={14}/> DMUSIC DAILY ROTATION</div>
-                  <h1>Play your mood.<br/><em>Feel everything.</em></h1>
-                  <p>지금 듣고 싶은 음악이 여기 있어. 찾고, 저장하고, 이어서 들어봐.</p>
+                  <div className="hero-pretitle"><span className="pretitle-pip"/> THE SOUND OF A NEW DAY</div>
+                  <h1 id="hero-title">More music.<br/><em>More you.</em></h1>
+                  <p>순간을 채우는 소리, 취향이 되는 발견.<br/>너의 음악 이야기는 여기서 시작돼.</p>
                   <div className="hero-ctas">
-                    <button className="primary-cta" onClick={() => playTrack(DEMO_TRACKS[0])}><Play size={18} fill="currentColor"/> 지금 듣기</button>
-                    <button className="secondary-cta" onClick={() => setView("search")}>음악 탐색 <ArrowRight size={17}/></button>
+                    <button className="primary-cta" onClick={() => playTrack(DEMO_TRACKS[0])}><Play size={17} fill="currentColor"/> 믹스 재생</button>
+                    <button className="secondary-cta" onClick={() => onSelectView("search")}>음악 둘러보기 <ArrowUpRight size={17}/></button>
                   </div>
+                  <div className="hero-edition"><span>VOL. 001</span><i/><span>DRAWING MUSIC ORIGINALS</span></div>
                 </div>
-                <div className="hero-record-stage" aria-hidden="true">
-                  <div className="hero-record"><div className="record-sticker"><AudioLines size={34}/><span>DM.</span></div></div>
-                  <div className="hero-waves">{[26,44,66,39,82,56,95,63,47,74,32,53,90,48,30].map((value,index)=>
-                    <span key={index} style={{height: value + "%"}} />)}</div>
+                <div className="hero-illustration" aria-hidden="true">
+                  <div className="hero-plate"><div className="hero-platter"><div className="hero-label"><b>DM</b><small>33⅓ RPM</small></div></div></div>
+                  <div className="hero-music-note"><AudioLines size={29}/></div>
+                  <span className="hero-stamp">YOUR SOUND.<br/>YOUR RULES.</span>
                 </div>
               </section>
               {recentTracks.length > 0 && <section className="recent-section" aria-label="최근 재생한 음악">
-                <div className="section-head recent-head"><div><div className="section-kicker">PICK UP WHERE YOU LEFT OFF</div><h2>다시 듣기</h2></div><span className="track-count">최근 재생</span></div>
+                <div className="section-head recent-head"><div><div className="section-kicker">PICK UP WHERE YOU LEFT OFF</div><h2>다시 듣기 <span className="section-arrow">↗</span></h2></div><span className="track-count">RECENT</span></div>
                 <div className="recent-grid">{recentTracks.map(track => <button className="recent-card" key={track.id} onClick={() => playTrack(track)}>
-                  <span className={"art recent-art art-" + track.artwork}><Disc3 size={21}/></span>
+                  <AlbumArt track={track} compact className="recent-art"/>
                   <span className="recent-title">{track.title}</span><Play size={17} className="recent-play" fill="currentColor"/>
                 </button>)}</div></section>}
-              <div className="section-head"><div><div className="section-kicker">ONE TAP, ONE MOOD</div><h2>지금 기분대로 재생</h2></div></div>
+              <div className="section-head"><div><div className="section-kicker">TUNE YOUR DAY</div><h2>어떤 분위기야?</h2></div><span className="section-trailing">PICK A MOOD <ArrowUpRight size={15}/></span></div>
               <div className="mood-row" aria-label="분위기 필터">
                 {moods.map(item => <button key={item} className={mood === item ? "mood-pill selected" : "mood-pill"}
                   onClick={() => { setMood(item); const first = DEMO_TRACKS.find(track => item === "전체" || track.mood === item); if(first) playTrack(first); }}
                   aria-label={item + " 음악 바로 재생"}><Play size={12} fill="currentColor"/>{item}</button>)}
               </div>
               <div className="featured-grid">
-                {DEMO_TRACKS.slice(0, 3).map((track, index) =>
+                {DEMO_TRACKS.slice(0, 4).map((track, index) =>
                   <button key={track.id} className="featured-card" onClick={() => playTrack(track)}>
-                    <div className={"art featured-art art-" + track.artwork}><div className="art-symbol"><Disc3 size={56}/></div></div>
-                    <span className="featured-index">0{index + 1}</span>
+                    <AlbumArt track={track} className="featured-art" playing={active.id === track.id && isPlaying}/>
+                    <span className="featured-index">FEATURED 0{index + 1}</span>
                     <span className="featured-title">{track.title}</span>
-                    <span className="featured-meta">{track.genre} · {track.mood}</span>
+                    <span className="featured-meta">{track.artist} / {track.genre}</span>
                     <span className="featured-play"><Play size={17} fill="currentColor"/></span>
                   </button>
                 )}
@@ -306,8 +306,8 @@ export default function MusicHome() {
 
           <section className="tracks-section">
             <div className="section-head">
-              <div><div className="section-kicker">{view === "search" ? "EXPLORE MUSIC" : view === "home" ? "EDITOR'S DEMO PICKS" : "YOUR COLLECTION"}</div>
-                <h2>{view === "home" ? "이번 주의 추천 데모" : sectionTitle} {view === "home" && <span className="section-note">✦</span>}</h2></div>
+              <div><div className="section-kicker">{view === "search" ? "EXPLORE MUSIC" : view === "home" ? "CURATED / ORIGINAL DEMOS" : "YOUR COLLECTION"}</div>
+                <h2>{view === "home" ? "좋아할 만한 트랙" : sectionTitle}</h2></div>
               <div className="section-tools"><span className="track-count">{visibleTracks.length}곡</span><button className="create-inline" onClick={() => setCreating(true)}><Plus size={15}/> 재생목록 만들기</button></div>
             </div>
             <div className="track-table">
@@ -316,17 +316,17 @@ export default function MusicHome() {
                 <div className={activeId === track.id && isPlaying ? "track-row playing" : "track-row"} key={track.id}>
                   <span className="track-number">{activeId === track.id && isPlaying ? <AudioLines size={16}/> : index + 1}</span>
                   <button className="track-main" onClick={() => playTrack(track)} aria-label={track.title + " 재생"}>
-                    <div className={"art track-art art-" + track.artwork}><Disc3 size={21}/></div>
+                    <AlbumArt track={track} compact className="track-art" playing={active.id===track.id && isPlaying}/>
                     <span className="song-info"><strong>{track.title}</strong><small>{track.artist}</small></span>
                     <Play className="row-play" size={17} fill="currentColor"/>
                   </button>
                   <span className="row-album desktop-only">{track.album}</span>
-                  <span className="row-mood desktop-only">{track.mood}</span>
+                  <span className="row-mood desktop-only"><span className="genre-tag">{track.mood}</span></span>
                   <span className="row-duration">{displayTime(track.duration)}</span>
                   <div className="row-actions">
                     <button className={liked.includes(track.id) ? "icon-btn liked" : "icon-btn"} onClick={() => toggleLiked(track.id)}
                       aria-label={liked.includes(track.id) ? "좋아요 취소" : "좋아요"} title="좋아요"><Heart size={17} fill={liked.includes(track.id) ? "currentColor" : "none"}/></button>
-                    <button className="icon-btn" onClick={() => addToPlaylist(track.id)} aria-label={track.title + " 재생목록에 추가"} title="재생목록에 추가"><Plus size={18}/></button>
+                    {view === "playlist" ? <button className="icon-btn" onClick={() => removeFromPlaylist(track.id)} aria-label={track.title + " 재생목록에서 빼기"} title="재생목록에서 빼기"><X size={17}/></button> : <button className="icon-btn" onClick={() => addToPlaylist(track.id)} aria-label={track.title + " 재생목록에 추가"} title="재생목록에 추가"><Plus size={18}/></button>}
                   </div>
                 </div>
               ) : <div className="empty-state"><Library size={30}/><strong>아직 여기는 조용하네.</strong><p>{view === "liked" ? "마음에 드는 곡에 하트를 눌러봐!" : view === "playlist" ? "곡 옆의 + 버튼으로 재생목록에 추가해 봐." : "다른 검색어나 분위기를 선택해 봐."}</p></div>}
@@ -334,10 +334,10 @@ export default function MusicHome() {
           </section>
           <section className="soundmap-section">
             <div className="soundmap-copy">
-              <div className="section-kicker"><AudioLines size={13}/> THE DMUSIC EXPERIENCE</div>
-              <h2>취향을 고르는<br/><span>새로운 방법.</span></h2>
-              <p>Sound Palette. 사운드 카드 하나를 골라 누르면 새로운 음악이 시작돼.</p>
-              <span className="soundmap-caption">SOUND PALETTE · INTERACTIVE DEMO</span>
+              <div className="section-kicker"><AudioLines size={13}/> THE SOUND LAB</div>
+              <h2>Sound, in color.</h2>
+              <p>Sound Palette에서 원하는 색을 골라봐.<br/>각 색깔에는 다른 멜로디가 담겨 있어.</p>
+              <span className="soundmap-caption">DMUSIC SIGNATURE · INTERACTIVE EXPERIMENT</span>
             </div>
             <div className="soundmap-canvas" role="group" aria-label="사운드 팔레트">
               {DEMO_TRACKS.slice(0,5).map((track, index) => (
@@ -345,7 +345,7 @@ export default function MusicHome() {
                   className={"palette-card art-" + track.artwork + (activeId === track.id && isPlaying ? " active" : "")}
                   onClick={() => playTrack(track)}
                   aria-label={track.title + " 재생"} title={track.title}>
-                  <span className="palette-index">0{index + 1}</span>
+                  <span className="palette-index">{track.genre}</span>
                   <span className="palette-bars">{[28,64,42,83,49,70,36].map((h,i)=>
                     <i key={i} style={{height: h + "%"}} />)}</span>
                   <span className="palette-track">{track.title}</span>
@@ -354,9 +354,9 @@ export default function MusicHome() {
             </div>
           </section>
           <section className="connection-panel">
-            <div className="connection-icon"><AudioLines size={23}/></div>
-            <div><strong>Music, connected.</strong>
-              <p>Drawing Verse의 음악 유니버스 및 프로필 활동과 연동될 예정이에요. 디자인은 드뮤직만의 스타일로 유지합니다.</p></div>
+            <div className="connection-icon"><Layers3 size={24}/></div>
+            <div><strong>One account. More ways to connect.</strong>
+              <p>Drawing Verse의 음악 유니버스와 프로필 활동 연동은 다음 단계에서 준비 중이에요.</p></div>
             <span className="planned-pill">COMING NEXT</span>
           </section>
           <footer className="legal-note">본 버전은 자체 생성된 데모 멜로디만 재생합니다. 상업 음원 스트리밍 및 계정 연동은 아직 지원하지 않습니다.</footer>
@@ -365,8 +365,8 @@ export default function MusicHome() {
 
       <div className="player" role="region" aria-label="음악 플레이어">
         <div className="player-track">
-          <button className={"art player-art art-" + active.artwork} onClick={() => setExpanded(true)} aria-label="확장 플레이어 열기"><Disc3 size={26}/></button>
-          <div className="player-song"><strong>{active.title}</strong><span>{active.artist}</span></div>
+          <button className="player-cover-button" onClick={() => setExpanded(true)} aria-label="확장 플레이어 열기"><AlbumArt track={active} compact className="player-art" playing={isPlaying}/></button>
+          <button className="player-song" onClick={() => setExpanded(true)} aria-label="지금 재생 중인 곡 보기"><strong>{active.title}</strong><span>{active.artist}</span></button>
           <button className={liked.includes(active.id) ? "icon-btn liked" : "icon-btn"} onClick={() => toggleLiked(active.id)} aria-label="현재 곡 좋아요">
             <Heart size={18} fill={liked.includes(active.id) ? "currentColor" : "none"}/>
           </button>
