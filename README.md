@@ -9,7 +9,7 @@ This is an early functional prototype, not a licensed commercial music-streaming
 Drawing Music is part of the Drawing ecosystem, **but owns a completely independent interface, palette, typography, visual motifs and player experience**. Cross-service entry points are integrations, not shared themes. Current visual style is a provisional music-first direction and can be refined.
 
 ## Features (prototype)
-- Independent DMUSIC design (charcoal + sunset-coral accents, warm album artwork and vinyl motifs), not a Drawing Verse or Spotify theme skin
+- Independent DMUSIC design (midnight charcoal, peach + aqua accents, handcrafted geometric album art), not a Drawing Verse or Spotify theme skin
 - Collapsible desktop library navigation, persistent playback bar, and album-forward discovery
 - One-tap mood-based demo playback, curated demo picks and recent-listening shortcuts
 - Expanded Now Playing panel with upcoming queue, track information and interactive demo waveform visualization
@@ -29,6 +29,8 @@ Drawing Music is part of the Drawing ecosystem, **but owns a completely independ
 - **SoundCloud:** A note-derived decorative waveform with seeking. This is **not** an actual sampled recording waveform.
 
 All layouts, illustrations and demo sounds are DMUSIC originals, and the theme remains independent from Drawing Verse. The sample catalog contains no licensed commercial releases.
+
+Read the [design-quality checklist](docs/design-quality.md) to see what has changed and which visual checks still require manual browser testing.
 
 ## Develop
 
