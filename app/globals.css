@@ -479,3 +479,17 @@ button.np-queue-item:hover{background:#27373e}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+/* Playlist selection flow and accurate playback activity */
+.rail-status.paused{color:#a7b5ba;border-color:#45555b}
+.rail-status.paused>span{background:#809197;box-shadow:none}
+.playlist-chooser{gap:14px}
+.chooser-options{max-height:260px;overflow:auto;display:grid;gap:7px}
+.chooser-options button{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid #3a4d53;background:#19252b;border-radius:10px;text-align:left;color:#dfe9e9;transition:background .15s}
+.chooser-options button:hover{background:#2a3a42;border-color:#829b9e}
+.chooser-options button>svg:first-child{color:#f0b698;flex:none}
+.chooser-options button>span{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+.chooser-options button strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chooser-options button small{font-size:10px;color:#93a7ab}
+.chooser-create{padding:12px;border:1px dashed #82918d;border-radius:10px;text-align:center;display:flex;justify-content:center;align-items:center;gap:7px;font-size:12px;color:#c9ebdf;font-weight:800}
+.chooser-create:hover{background:#29383e}
