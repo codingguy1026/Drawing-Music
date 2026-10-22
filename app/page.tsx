@@ -5,11 +5,13 @@ import {
   ArrowLeft, ArrowRight, AudioLines, Check, ChevronRight, Disc3, Heart,
   Home, Library, ListMusic, Music2, Pause, Play, Plus, Repeat2,
   Search, Shuffle, SkipBack, SkipForward, Sparkles, Volume2, VolumeX,
-  X, Orbit, Headphones, Radio, ExternalLink, PanelLeftClose, PanelLeftOpen, Maximize2
+  X, Orbit, Headphones, Radio, ExternalLink, PanelLeftClose, PanelLeftOpen, Maximize2,
+  ArrowUpRight, Layers3, Trash2, HeadphonesIcon
 } from "lucide-react";
 import { DEMO_TRACKS, displayTime, type DemoTrack } from "../lib/demoTracks";
 import { DemoAudioEngine } from "../lib/audioEngine";
 import NowPlayingPanel from "../components/NowPlayingPanel";
+import AlbumArt from "../components/AlbumArt";
 
 type PageView = "home" | "search" | "liked" | "playlist";
 type Playlist = { id: string; name: string; trackIds: string[] };
@@ -39,6 +41,7 @@ export default function MusicHome() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>([]);
+  const [genreFilter, setGenreFilter] = useState("전체");
 
   const active = DEMO_TRACKS.find(track => track.id === activeId) || DEMO_TRACKS[0];
   const selectedPlaylist = playlists.find(list => list.id === playlistId);
@@ -186,38 +189,43 @@ export default function MusicHome() {
     if (view === "liked" && !liked.includes(track.id)) return false;
     if (view === "playlist" && (!selectedPlaylist || !selectedPlaylist.trackIds.includes(track.id))) return false;
     if (view === "home" && mood !== "전체" && track.mood !== mood) return false;
+    if (view === "search" && genreFilter !== "전체" && track.genre !== genreFilter) return false;
     const needle = search.toLocaleLowerCase().trim();
     return !needle || [track.title, track.artist, track.album, track.genre, track.mood]
       .some(value => value.toLocaleLowerCase().includes(needle));
-  }), [view, liked, selectedPlaylist, mood, search]);
+  }), [view, liked, selectedPlaylist, mood, search, genreFilter]);
 
   const sectionTitle = view === "liked" ? "좋아요 표시한 곡"
     : view === "playlist" ? (selectedPlaylist?.name || "재생목록")
     : view === "search" ? "음악 탐색" : "오늘의 사운드";
 
   const recentTracks = recentIds.map(id => DEMO_TRACKS.find(t => t.id === id)).filter((t): t is DemoTrack => Boolean(t)).slice(0, 4);
+  const genres = ["전체", ...new Set(DEMO_TRACKS.map(track => track.genre))];
+  const onSelectView = (target: PageView) => { setView(target); setSearch(""); setGenreFilter("전체"); setMood("전체"); };
+  const removeFromPlaylist = (id: string) => { if (!selectedPlaylist) return; setPlaylists(previous => previous.map(list => list.id === selectedPlaylist.id ? {...list, trackIds:list.trackIds.filter(t => t !== id)} : list)); setNotice("재생목록에서 곡을 뺐어요."); };
+  const deletePlaylist = () => { if (!selectedPlaylist) return; if (!window.confirm(`"${selectedPlaylist.name}" 재생목록을 삭제할까요?`)) return; setPlaylists(old => old.filter(list => list.id !== selectedPlaylist.id)); setPlaylistId(null); onSelectView("home"); setNotice("재생목록이 삭제되었어요."); };
 
   return (
     <div className={sidebarCollapsed ? "dm-app sidebar-compact" : "dm-app"}>
       <aside className="sidebar">
         <button className="brand" onClick={() => setView("home")} aria-label="Drawing Music 홈">
-          <div className="brand-mark"><AudioLines size={23} strokeWidth={2.4} /></div>
-          <div><strong>Drawing<span>Music</span></strong><small>LISTEN YOUR WAY</small></div>
+          <div className="brand-mark"><span>dm<span className="logo-dot">.</span></span></div>
+          <div><strong>Drawing<span>Music</span></strong><small>THE SOUND OF YOU</small></div>
         </button>
-        <p className="nav-label">DISCOVER</p>
+        <p className="nav-label">DISCOVER <span>01</span></p>
         <nav className="sidebar-nav" aria-label="기본 탐색">
-          <button className={view === "home" ? "nav-item active" : "nav-item"} onClick={() => { setView("home"); setSearch(""); setMood("전체"); }}>
+          <button className={view === "home" ? "nav-item active" : "nav-item"} onClick={() => onSelectView("home")}>
             <Home size={19}/> 홈
           </button>
           <button className={view === "search" ? "nav-item active" : "nav-item"} onClick={() => setView("search")}>
             <Search size={19}/> 둘러보기
           </button>
-          <button className={view === "liked" ? "nav-item active" : "nav-item"} onClick={() => { setView("liked"); setSearch(""); }}>
+          <button className={view === "liked" ? "nav-item active" : "nav-item"} onClick={() => onSelectView("liked")}>
             <Heart size={19}/> 좋아하는 음악
           </button>
         </nav>
         <div className="library-heading">
-          <span>내 라이브러리</span>
+          <span>YOUR LIBRARY</span>
           <button title="새 재생목록" aria-label="새 재생목록" onClick={() => setCreating(true)}><Plus size={19}/></button>
         </div>
         <button className="nav-item library-link" onClick={() => setCreating(true)}>
@@ -232,7 +240,7 @@ export default function MusicHome() {
           ))}
         </div>
         <div className="sidebar-bottom">
-          <div className="universe-mini"><AudioLines size={19}/><div><strong>DRAWING MUSIC</strong><span>A part of Drawing.</span></div></div>
+          <div className="universe-mini"><HeadphonesIcon size={20}/><div><strong>YOUR MUSIC, YOUR WAY.</strong><span>Find your own frequency.</span></div></div>
           {verseUrl ? <a className="back-verse" href={verseUrl} target="_blank" rel="noopener noreferrer">Drawing Verse로 이동 <ArrowRight size={16}/></a>
           : <span className="back-verse muted-link">Drawing Verse 연동 준비 중 <ArrowRight size={16}/></span>}
         </div>
@@ -241,12 +249,12 @@ export default function MusicHome() {
       <main className="main">
         <header className="topbar">
           <div className="topbar-start"><button className="sidebar-toggle" onClick={() => setSidebarCollapsed(c => !c)} aria-label={sidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"} title={sidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"}>{sidebarCollapsed ? <PanelLeftOpen size={19}/> : <PanelLeftClose size={19}/>}</button>
-          <div className="breadcrumbs"><span>Drawing Music</span><ChevronRight size={14}/><strong>{view === "home" ? "홈" : view === "search" ? "탐색" : view === "liked" ? "좋아요" : "내 재생목록"}</strong></div></div>
+          <div className="breadcrumbs"><span>DM / 001</span><ChevronRight size={14}/><strong>{view === "home" ? "Discover" : view === "search" ? "Explore" : view === "liked" ? "Liked" : "My Playlist"}</strong></div></div>
           <div className="top-actions">
             <div className="searchbox"><Search size={18}/><input aria-label="음악 검색" placeholder="노래, 아티스트, 분위기 검색"
               value={search} onFocus={() => setView("search")} onChange={e => { setSearch(e.target.value); setView("search"); }}/></div>
-            <span className="prototype-pill"><span className="green-dot"/> LIVE DEMO</span>
-            <span className="user-avatar" title="로컬 데모 프로필">D</span>
+            <span className="prototype-pill"><span className="green-dot"/> ORIGINAL DEMOS</span>
+            <span className="user-avatar" title="로그인 연동 전 데모 프로필">DM</span>
           </div>
         </header>
 
