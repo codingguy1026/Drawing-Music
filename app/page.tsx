@@ -5,10 +5,11 @@ import {
   ArrowLeft, ArrowRight, AudioLines, Check, ChevronRight, Disc3, Heart,
   Home, Library, ListMusic, Music2, Pause, Play, Plus, Repeat2,
   Search, Shuffle, SkipBack, SkipForward, Sparkles, Volume2, VolumeX,
-  X, Orbit, Headphones, Radio, ExternalLink
+  X, Orbit, Headphones, Radio, ExternalLink, PanelLeftClose, PanelLeftOpen, Maximize2
 } from "lucide-react";
 import { DEMO_TRACKS, displayTime, type DemoTrack } from "../lib/demoTracks";
 import { DemoAudioEngine } from "../lib/audioEngine";
+import NowPlayingPanel from "../components/NowPlayingPanel";
 
 type PageView = "home" | "search" | "liked" | "playlist";
 type Playlist = { id: string; name: string; trackIds: string[] };
@@ -35,6 +36,9 @@ export default function MusicHome() {
   const [newName, setNewName] = useState("");
   const [notice, setNotice] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [recentIds, setRecentIds] = useState<string[]>([]);
 
   const active = DEMO_TRACKS.find(track => track.id === activeId) || DEMO_TRACKS[0];
   const selectedPlaylist = playlists.find(list => list.id === playlistId);
@@ -43,6 +47,8 @@ export default function MusicHome() {
     try {
       const savedLiked = JSON.parse(window.localStorage.getItem("dmusic:liked") || "[]");
       const savedPlaylists = JSON.parse(window.localStorage.getItem("dmusic:playlists") || "[]");
+      const savedRecent = JSON.parse(window.localStorage.getItem("dmusic:recent") || "[]");
+      if (Array.isArray(savedRecent)) setRecentIds(savedRecent.filter((id): id is string => typeof id === "string" && DEMO_TRACKS.some(t => t.id === id)).slice(0, 8));
       if (Array.isArray(savedLiked)) setLiked(savedLiked.filter((id): id is string => typeof id === "string"));
       if (Array.isArray(savedPlaylists)) {
         setPlaylists(savedPlaylists.filter(
@@ -60,8 +66,9 @@ export default function MusicHome() {
     try {
       window.localStorage.setItem("dmusic:liked", JSON.stringify(liked));
       window.localStorage.setItem("dmusic:playlists", JSON.stringify(playlists));
+      window.localStorage.setItem("dmusic:recent", JSON.stringify(recentIds));
     } catch { /* Private browsing may disable storage. */ }
-  }, [hydrated, liked, playlists]);
+  }, [hydrated, liked, playlists, recentIds]);
 
   const getEngine = () => {
     if (!engine.current) engine.current = new DemoAudioEngine();
@@ -74,6 +81,7 @@ export default function MusicHome() {
       player.setVolume(volume / 100);
       player.play(track, position);
       setActiveId(track.id);
+      setRecentIds(old => [track.id, ...old.filter(id => id !== track.id)].slice(0, 8));
       setProgress(position);
       setIsPlaying(true);
       setNotice("");
@@ -187,14 +195,15 @@ export default function MusicHome() {
     : view === "playlist" ? (selectedPlaylist?.name || "재생목록")
     : view === "search" ? "음악 탐색" : "오늘의 사운드";
 
+  const recentTracks = recentIds.map(id => DEMO_TRACKS.find(t => t.id === id)).filter((t): t is DemoTrack => Boolean(t)).slice(0, 4);
+
   return (
-    <div className="dm-app">
+    <div className={sidebarCollapsed ? "dm-app sidebar-compact" : "dm-app"}>
       <aside className="sidebar">
-        <div className="brand" onClick={() => setView("home")} role="button" tabIndex={0}
-          onKeyDown={event => { if (event.key === "Enter") setView("home"); }}>
+        <button className="brand" onClick={() => setView("home")} aria-label="Drawing Music 홈">
           <div className="brand-mark"><AudioLines size={23} strokeWidth={2.4} /></div>
-          <div><strong>Drawing<span>Music</span></strong><small>DRAWING ECOSYSTEM</small></div>
-        </div>
+          <div><strong>Drawing<span>Music</span></strong><small>LISTEN YOUR WAY</small></div>
+        </button>
         <p className="nav-label">DISCOVER</p>
         <nav className="sidebar-nav" aria-label="기본 탐색">
           <button className={view === "home" ? "nav-item active" : "nav-item"} onClick={() => { setView("home"); setSearch(""); setMood("전체"); }}>
@@ -231,7 +240,8 @@ export default function MusicHome() {
 
       <main className="main">
         <header className="topbar">
-          <div className="breadcrumbs"><span>Drawing</span><ChevronRight size={14}/><strong>Music</strong></div>
+          <div className="topbar-start"><button className="sidebar-toggle" onClick={() => setSidebarCollapsed(c => !c)} aria-label={sidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"} title={sidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"}>{sidebarCollapsed ? <PanelLeftOpen size={19}/> : <PanelLeftClose size={19}/>}</button>
+          <div className="breadcrumbs"><span>Drawing Music</span><ChevronRight size={14}/><strong>{view === "home" ? "홈" : view === "search" ? "탐색" : view === "liked" ? "좋아요" : "내 재생목록"}</strong></div></div>
           <div className="top-actions">
             <div className="searchbox"><Search size={18}/><input aria-label="음악 검색" placeholder="노래, 아티스트, 분위기 검색"
               value={search} onFocus={() => setView("search")} onChange={e => { setSearch(e.target.value); setView("search"); }}/></div>
@@ -246,9 +256,9 @@ export default function MusicHome() {
               <section className="hero">
                 <div className="hero-deco deco-one"/><div className="hero-deco deco-two"/>
                 <div className="hero-content">
-                  <div className="eyebrow"><AudioLines size={14}/> YOUR DAY. YOUR SOUND.</div>
-                  <h1>오늘의 리듬을<br/><em>더 크게.</em></h1>
-                  <p>좋아하는 순간, 새로운 소리. 너의 플레이리스트가 시작되는 곳.</p>
+                  <div className="eyebrow"><AudioLines size={14}/> DMUSIC DAILY ROTATION</div>
+                  <h1>Play your mood.<br/><em>Feel everything.</em></h1>
+                  <p>지금 듣고 싶은 음악이 여기 있어. 찾고, 저장하고, 이어서 들어봐.</p>
                   <div className="hero-ctas">
                     <button className="primary-cta" onClick={() => playTrack(DEMO_TRACKS[0])}><Play size={18} fill="currentColor"/> 지금 듣기</button>
                     <button className="secondary-cta" onClick={() => setView("search")}>음악 탐색 <ArrowRight size={17}/></button>
@@ -260,9 +270,17 @@ export default function MusicHome() {
                     <span key={index} style={{height: value + "%"}} />)}</div>
                 </div>
               </section>
-              <div className="section-head"><div><div className="section-kicker">PICK YOUR VIBE</div><h2>오늘은 어떤 음악?</h2></div></div>
+              {recentTracks.length > 0 && <section className="recent-section" aria-label="최근 재생한 음악">
+                <div className="section-head recent-head"><div><div className="section-kicker">PICK UP WHERE YOU LEFT OFF</div><h2>다시 듣기</h2></div><span className="track-count">최근 재생</span></div>
+                <div className="recent-grid">{recentTracks.map(track => <button className="recent-card" key={track.id} onClick={() => playTrack(track)}>
+                  <span className={"art recent-art art-" + track.artwork}><Disc3 size={21}/></span>
+                  <span className="recent-title">{track.title}</span><Play size={17} className="recent-play" fill="currentColor"/>
+                </button>)}</div></section>}
+              <div className="section-head"><div><div className="section-kicker">ONE TAP, ONE MOOD</div><h2>지금 기분대로 재생</h2></div></div>
               <div className="mood-row" aria-label="분위기 필터">
-                {moods.map(item => <button key={item} className={mood === item ? "mood-pill selected" : "mood-pill"} onClick={() => setMood(item)}>{item}</button>)}
+                {moods.map(item => <button key={item} className={mood === item ? "mood-pill selected" : "mood-pill"}
+                  onClick={() => { setMood(item); const first = DEMO_TRACKS.find(track => item === "전체" || track.mood === item); if(first) playTrack(first); }}
+                  aria-label={item + " 음악 바로 재생"}><Play size={12} fill="currentColor"/>{item}</button>)}
               </div>
               <div className="featured-grid">
                 {DEMO_TRACKS.slice(0, 3).map((track, index) =>
@@ -280,8 +298,8 @@ export default function MusicHome() {
 
           <section className="tracks-section">
             <div className="section-head">
-              <div><div className="section-kicker">{view === "search" ? "EXPLORE MUSIC" : view === "home" ? "CURATED FOR YOU" : "YOUR COLLECTION"}</div>
-                <h2>{sectionTitle} {view === "home" && <span className="section-note">✦</span>}</h2></div>
+              <div><div className="section-kicker">{view === "search" ? "EXPLORE MUSIC" : view === "home" ? "EDITOR'S DEMO PICKS" : "YOUR COLLECTION"}</div>
+                <h2>{view === "home" ? "이번 주의 추천 데모" : sectionTitle} {view === "home" && <span className="section-note">✦</span>}</h2></div>
               <div className="section-tools"><span className="track-count">{visibleTracks.length}곡</span><button className="create-inline" onClick={() => setCreating(true)}><Plus size={15}/> 재생목록 만들기</button></div>
             </div>
             <div className="track-table">
@@ -339,7 +357,7 @@ export default function MusicHome() {
 
       <div className="player" role="region" aria-label="음악 플레이어">
         <div className="player-track">
-          <div className={"art player-art art-" + active.artwork}><Disc3 size={26}/></div>
+          <button className={"art player-art art-" + active.artwork} onClick={() => setExpanded(true)} aria-label="확장 플레이어 열기"><Disc3 size={26}/></button>
           <div className="player-song"><strong>{active.title}</strong><span>{active.artist}</span></div>
           <button className={liked.includes(active.id) ? "icon-btn liked" : "icon-btn"} onClick={() => toggleLiked(active.id)} aria-label="현재 곡 좋아요">
             <Heart size={18} fill={liked.includes(active.id) ? "currentColor" : "none"}/>
@@ -363,7 +381,7 @@ export default function MusicHome() {
             <span>{displayTime(active.duration)}</span>
           </div>
         </div>
-        <div className="player-extra"><span className="demo-tag"><Radio size={14}/> Original demo</span>
+        <div className="player-extra"><button className="control expand-control" aria-label="확장 플레이어 열기" title="확장 플레이어" onClick={() => setExpanded(true)}><Maximize2 size={18}/></button><span className="demo-tag"><Radio size={14}/> Original demo</span>
           <button className="control" aria-label={volume ? "음소거" : "음소거 해제"} onClick={() => changeVolume(volume ? 0 : 65)}>
             {volume ? <Volume2 size={20}/> : <VolumeX size={20}/>}
           </button>
@@ -373,6 +391,11 @@ export default function MusicHome() {
         </div>
       </div>
       {notice && <div className="toast" role="status"><Check size={17}/>{notice}<button onClick={() => setNotice("")} aria-label="알림 닫기"><X size={16}/></button></div>}
+      {expanded && <NowPlayingPanel track={active} progress={progress} playing={isPlaying} liked={liked.includes(active.id)}
+        shuffle={shuffle} repeat={repeat} onClose={() => setExpanded(false)} onSeek={seek} onToggle={togglePlayback}
+        onPrevious={previousTrack} onNext={() => nextTrack()} onLike={() => toggleLiked(active.id)}
+        onShuffle={() => setShuffle(v => !v)} onRepeat={() => setRepeat(r => r === "off" ? "all" : r === "all" ? "one" : "off")}
+        onTrack={track => playTrack(track)}/>} 
       {creating && (
         <div className="dialog-backdrop" onClick={() => setCreating(false)}>
           <form className="dialog" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); createPlaylist(); }}>
