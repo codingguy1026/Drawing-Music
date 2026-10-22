@@ -258,7 +258,7 @@ export default function MusicHome() {
           </div>
         </header>
 
-        <div className="main-scroll">
+        <div className="main-scroll"><div className="content-layout"><div className="content-primary">
           {view === "home" && (
             <>
               <section className="hero" aria-labelledby="hero-title">
@@ -305,6 +305,12 @@ export default function MusicHome() {
           )}
 
           <section className="tracks-section">
+            {view === "search" && <div className="explore-heading"><span className="section-kicker">THE MUSIC INDEX / DEMO COLLECTION</span>
+                <h1>새로운 소리를 찾아봐.</h1><p>장르와 분위기로 골라 듣는 Drawing Music 오리지널 데모.</p>
+                <div className="explore-categories">{genres.map(g=><button key={g} className={genreFilter===g ? "selected" : ""} onClick={()=>setGenreFilter(g)}>{g}</button>)}</div>
+              </div>}
+            {view === "liked" && <div className="collection-heading"><div className="collection-icon"><Heart size={34} fill="currentColor"/></div><div><span className="section-kicker">YOUR FAVORITES</span><h1>좋아하는 음악</h1><p>{liked.length}곡을 보관 중이에요.</p></div></div>}
+            {view === "playlist" && <div className="collection-heading"><div className="collection-icon playlist"><ListMusic size={35}/></div><div><span className="section-kicker">MY PLAYLIST</span><h1>{selectedPlaylist?.name || "재생목록"}</h1><p>{selectedPlaylist?.trackIds.length || 0}곡을 담았어요.</p></div>{selectedPlaylist && <button className="delete-playlist" onClick={deletePlaylist} aria-label="현재 재생목록 삭제"><Trash2 size={17}/> 삭제</button>}</div>}
             <div className="section-head">
               <div><div className="section-kicker">{view === "search" ? "EXPLORE MUSIC" : view === "home" ? "CURATED / ORIGINAL DEMOS" : "YOUR COLLECTION"}</div>
                 <h2>{view === "home" ? "좋아할 만한 트랙" : sectionTitle}</h2></div>
@@ -359,7 +365,19 @@ export default function MusicHome() {
               <p>Drawing Verse의 음악 유니버스와 프로필 활동 연동은 다음 단계에서 준비 중이에요.</p></div>
             <span className="planned-pill">COMING NEXT</span>
           </section>
-          <footer className="legal-note">본 버전은 자체 생성된 데모 멜로디만 재생합니다. 상업 음원 스트리밍 및 계정 연동은 아직 지원하지 않습니다.</footer>
+          <footer className="legal-note">오리지널 데모 음악만 제공됩니다. 상업 음원 및 Drawing 계정 연동은 아직 지원하지 않아요.</footer>
+          </div>
+          <aside className="listening-rail" aria-label="뮤직 사이드 패널">
+            <div className="rail-header"><div><span className="rail-caption">YOUR LISTENING SPACE</span><h2>Now playing<span className="rail-heading-dot">.</span></h2></div><span className="rail-status"><span/> LIVE</span></div>
+            <button className="rail-cover-button" onClick={() => setExpanded(true)} aria-label="현재 재생 곡의 전체 플레이어 열기"><AlbumArt track={active} className="rail-cover" playing={isPlaying}/><span className="rail-cover-overlay"><Maximize2 size={20}/></span></button>
+            <div className="rail-now-meta"><div><strong>{active.title}</strong><p>{active.artist} <span>·</span> {active.album}</p></div><button aria-label={liked.includes(active.id) ? "좋아요 취소" : "좋아요"} className={liked.includes(active.id) ? "rail-heart liked" : "rail-heart"} onClick={()=>toggleLiked(active.id)}><Heart size={19} fill={liked.includes(active.id) ? "currentColor" : "none"}/></button></div>
+            <div className="rail-wave-wrap"><span className="rail-wave-label">SOUND ACTIVITY</span><div className={isPlaying ? "rail-wave playing" : "rail-wave"} aria-hidden="true">{[26,58,35,78,46,89,39,65,33,82,54,30,72,40,94,52,64,27,81,42,60,36,86,45].map((h,index)=><span key={index} style={{height:h+"%",animationDelay:index*.045+"s"}}/>)}</div><div className="rail-progress"><span style={{width:(progress/active.duration*100)+"%"}} /></div></div>
+            <div className="rail-divider"/>
+            <div className="rail-next"><h3>UP NEXT</h3><button onClick={()=>setExpanded(true)}>대기열 전체 <ArrowUpRight size={14}/></button></div>
+            {DEMO_TRACKS.slice(1,4).map((_,i)=> { const pos=(DEMO_TRACKS.findIndex(t=>t.id===active.id)+i+1)%DEMO_TRACKS.length;const t=DEMO_TRACKS[pos];return <button className="rail-queue-row" key={t.id} onClick={()=>playTrack(t)}><AlbumArt track={t} compact className="rail-queue-cover"/><span><strong>{t.title}</strong><small>{t.artist}</small></span><Play size={15}/></button>;})}
+            <div className="rail-cross-service"><span className="rail-caption">DRAWING ECOSYSTEM</span><strong>Connected by music.</strong><p>음악 유니버스에서 서로의 취향을 공유할 수 있도록 준비 중이에요.</p>{verseUrl && <a href={verseUrl} target="_blank" rel="noreferrer">Drawing Verse <ArrowUpRight size={14}/></a>}</div>
+          </aside>
+          </div>
         </div>
       </main>
 
