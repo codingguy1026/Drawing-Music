@@ -6,7 +6,7 @@ import {
   Home, Library, ListMusic, Music2, Pause, Play, Plus, Repeat2,
   Search, Shuffle, SkipBack, SkipForward, Sparkles, Volume2, VolumeX,
   X, Orbit, Headphones, Radio, ExternalLink, PanelLeftClose, PanelLeftOpen, Maximize2,
-  ArrowUpRight, Layers3, Trash2, HeadphonesIcon
+  ArrowUpRight, Layers3, Trash2
 } from "lucide-react";
 import { DEMO_TRACKS, displayTime, type DemoTrack } from "../lib/demoTracks";
 import { DemoAudioEngine } from "../lib/audioEngine";
@@ -250,7 +250,7 @@ export default function MusicHome() {
           ))}
         </div>
         <div className="sidebar-bottom">
-          <div className="universe-mini"><HeadphonesIcon size={20}/><div><strong>YOUR MUSIC, YOUR WAY.</strong><span>Find your own frequency.</span></div></div>
+          <div className="universe-mini"><Headphones size={20}/><div><strong>YOUR MUSIC, YOUR WAY.</strong><span>Find your own frequency.</span></div></div>
           {verseUrl ? <a className="back-verse" href={verseUrl} target="_blank" rel="noopener noreferrer">Drawing Verse로 이동 <ArrowRight size={16}/></a>
           : <span className="back-verse muted-link">Drawing Verse 연동 준비 중 <ArrowRight size={16}/></span>}
         </div>
