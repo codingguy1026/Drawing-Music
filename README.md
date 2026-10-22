@@ -9,12 +9,26 @@ This is an early functional prototype, not a licensed commercial music-streaming
 Drawing Music is part of the Drawing ecosystem, **but owns a completely independent interface, palette, typography, visual motifs and player experience**. Cross-service entry points are integrations, not shared themes. Current visual style is a provisional music-first direction and can be refined.
 
 ## Features (prototype)
-- Independent DMUSIC visual design (charcoal + lime, waveform and vinyl motifs); not a Drawing Verse theme skin
+- Independent DMUSIC design (charcoal + sunset-coral accents, warm album artwork and vinyl motifs), not a Drawing Verse or Spotify theme skin
+- Collapsible desktop library navigation, persistent playback bar, and album-forward discovery
+- One-tap mood-based demo playback, curated demo picks and recent-listening shortcuts
+- Expanded Now Playing panel with upcoming queue, track information and interactive demo waveform visualization
 - Play, pause, previous/next, shuffle, repeat, seek and volume
 - Search and discover original demo tracks
-- Local liked tracks and user-created playlists (stored in this browser)
+- Local liked tracks, recent listening and user-created playlists (stored in this browser)
 - Drawing Verse cross-service entry point via environment configuration
 - Privacy-first groundwork for an optional, opt-in "now playing" activity card
+
+## Benchmarking goals
+
+- **Spotify:** Familiar library-first navigation and playback continuity.
+- **Apple Music:** Spacious album-first presentation.
+- **YouTube Music:** Expandable player, queue, and track metadata.
+- **FLO:** One-tap mood listening.
+- **Melon:** Curated discovery, labelled **demo picks**, never presented as a real chart.
+- **SoundCloud:** A note-derived decorative waveform with seeking. This is **not** an actual sampled recording waveform.
+
+All layouts, illustrations and demo sounds are DMUSIC originals, and the theme remains independent from Drawing Verse. The sample catalog contains no licensed commercial releases.
 
 ## Develop
 
