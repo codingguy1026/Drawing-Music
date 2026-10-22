@@ -16,11 +16,6 @@ type RepeatMode = "off" | "all" | "one";
 
 const verseUrl = process.env.NEXT_PUBLIC_DRAWING_VERSE_URL?.trim() || "";
 const moods = ["전체", "편안", "밤", "집중", "에너지", "우주"];
-const constellationPoints = [
-  { left: "16%", top: "20%" }, { left: "75%", top: "21%" },
-  { left: "87%", top: "64%" }, { left: "26%", top: "81%" },
-  { left: "57%", top: "11%" },
-];
 
 export default function MusicHome() {
   const engine = useRef<DemoAudioEngine | null>(null);
@@ -228,7 +223,7 @@ export default function MusicHome() {
           ))}
         </div>
         <div className="sidebar-bottom">
-          <div className="universe-mini"><Orbit size={19}/><div><strong>One Drawing.</strong><span>Infinite universes.</span></div></div>
+          <div className="universe-mini"><AudioLines size={19}/><div><strong>DRAWING MUSIC</strong><span>A part of Drawing.</span></div></div>
           {verseUrl ? <a className="back-verse" href={verseUrl} target="_blank" rel="noopener noreferrer">Drawing Verse로 이동 <ArrowRight size={16}/></a>
           : <span className="back-verse muted-link">Drawing Verse 연동 준비 중 <ArrowRight size={16}/></span>}
         </div>
@@ -251,17 +246,21 @@ export default function MusicHome() {
               <section className="hero">
                 <div className="hero-deco deco-one"/><div className="hero-deco deco-two"/>
                 <div className="hero-content">
-                  <div className="eyebrow"><Sparkles size={14}/> THE SOUND OF YOUR UNIVERSE</div>
-                  <h1>음악으로 그리는<br/><em>나만의 우주.</em></h1>
-                  <p>오늘의 기분을 음악으로 채워봐. 발견하는 모든 소리가 너만의 세계가 돼.</p>
+                  <div className="eyebrow"><AudioLines size={14}/> YOUR DAY. YOUR SOUND.</div>
+                  <h1>오늘의 리듬을<br/><em>더 크게.</em></h1>
+                  <p>좋아하는 순간, 새로운 소리. 너의 플레이리스트가 시작되는 곳.</p>
                   <div className="hero-ctas">
                     <button className="primary-cta" onClick={() => playTrack(DEMO_TRACKS[0])}><Play size={18} fill="currentColor"/> 지금 듣기</button>
                     <button className="secondary-cta" onClick={() => setView("search")}>음악 탐색 <ArrowRight size={17}/></button>
                   </div>
                 </div>
-                <div className="hero-orbit" aria-hidden="true"><div className="planet"><div className="planet-inner"><Music2 size={44}/></div></div><i/><b/></div>
+                <div className="hero-record-stage" aria-hidden="true">
+                  <div className="hero-record"><div className="record-sticker"><AudioLines size={34}/><span>DM.</span></div></div>
+                  <div className="hero-waves">{[26,44,66,39,82,56,95,63,47,74,32,53,90,48,30].map((value,index)=>
+                    <span key={index} style={{height: value + "%"}} />)}</div>
+                </div>
               </section>
-              <div className="section-head"><div><div className="section-kicker">MADE FOR YOUR MOMENT</div><h2>취향대로 골라 듣기 <Sparkles size={19}/></h2></div></div>
+              <div className="section-head"><div><div className="section-kicker">PICK YOUR VIBE</div><h2>오늘은 어떤 음악?</h2></div></div>
               <div className="mood-row" aria-label="분위기 필터">
                 {moods.map(item => <button key={item} className={mood === item ? "mood-pill selected" : "mood-pill"} onClick={() => setMood(item)}>{item}</button>)}
               </div>
@@ -309,29 +308,29 @@ export default function MusicHome() {
           </section>
           <section className="soundmap-section">
             <div className="soundmap-copy">
-              <div className="section-kicker"><Sparkles size={13}/> DRAWING SIGNATURE</div>
-              <h2>소리로 펼쳐지는<br/><span>나만의 별자리.</span></h2>
-              <p>사운드 콘스텔레이션의 별을 눌러봐. 서로 다른 다섯 개의 사운드가 네 음악 우주를 밝혀줄 거야.</p>
-              <span className="soundmap-caption">INTERACTIVE SOUND CONSTELLATION · DEMO</span>
+              <div className="section-kicker"><AudioLines size={13}/> THE DMUSIC EXPERIENCE</div>
+              <h2>취향을 고르는<br/><span>새로운 방법.</span></h2>
+              <p>Sound Palette. 사운드 카드 하나를 골라 누르면 새로운 음악이 시작돼.</p>
+              <span className="soundmap-caption">SOUND PALETTE · INTERACTIVE DEMO</span>
             </div>
-            <div className="soundmap-canvas">
-              <div className="orbit-ring ring-a"/><div className="orbit-ring ring-b"/>
-              <div className="orbit-heart"><AudioLines size={28}/></div>
+            <div className="soundmap-canvas" role="group" aria-label="사운드 팔레트">
               {DEMO_TRACKS.slice(0,5).map((track, index) => (
                 <button key={track.id} type="button"
-                  className={"map-star art-" + track.artwork + (activeId === track.id && isPlaying ? " shining" : "")}
-                  style={constellationPoints[index]}
+                  className={"palette-card art-" + track.artwork + (activeId === track.id && isPlaying ? " active" : "")}
                   onClick={() => playTrack(track)}
                   aria-label={track.title + " 재생"} title={track.title}>
-                  <Music2 size={17}/>
+                  <span className="palette-index">0{index + 1}</span>
+                  <span className="palette-bars">{[28,64,42,83,49,70,36].map((h,i)=>
+                    <i key={i} style={{height: h + "%"}} />)}</span>
+                  <span className="palette-track">{track.title}</span>
                 </button>
               ))}
             </div>
           </section>
           <section className="connection-panel">
-            <div className="connection-icon"><Orbit size={23}/></div>
-            <div><strong>More than music. It&apos;s Drawing.</strong>
-              <p>취미 유니버스의 음악 커뮤니티와 프로필 활동 연동은 다음 단계에서 만나요.</p></div>
+            <div className="connection-icon"><AudioLines size={23}/></div>
+            <div><strong>Music, connected.</strong>
+              <p>Drawing Verse의 음악 유니버스 및 프로필 활동과 연동될 예정이에요. 디자인은 드뮤직만의 스타일로 유지합니다.</p></div>
             <span className="planned-pill">COMING NEXT</span>
           </section>
           <footer className="legal-note">본 버전은 자체 생성된 데모 멜로디만 재생합니다. 상업 음원 스트리밍 및 계정 연동은 아직 지원하지 않습니다.</footer>
