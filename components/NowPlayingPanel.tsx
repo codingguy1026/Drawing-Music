@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AudioLines, Disc3, Heart, ListMusic, Pause, Play, Repeat2, Shuffle, SkipBack, SkipForward, X } from "lucide-react";
 import type { DemoTrack } from "../lib/demoTracks";
 import { DEMO_TRACKS, displayTime } from "../lib/demoTracks";
+import AlbumArt from "./AlbumArt";
 
 type Props = {
   track: DemoTrack;
@@ -58,9 +59,7 @@ export default function NowPlayingPanel({
         </header>
         <div className="np-content">
           <div className="np-main">
-            <div className={"art np-cover art-" + track.artwork}>
-              <div className="np-cover-symbol"><Disc3 size={78} strokeWidth={1}/></div>
-            </div>
+            <AlbumArt track={track} className="np-cover" playing={playing}/>
             <div className="np-track-meta">
               <div><div className="np-eyebrow">LISTENING NOW</div>
                 <h2>{track.title}</h2><p>{track.artist} · {track.album}</p></div>
@@ -102,13 +101,13 @@ export default function NowPlayingPanel({
             {tab === "queue" ? <div className="np-queue" role="tabpanel">
               <div className="np-queue-label">지금 재생 중</div>
               <div className="np-queue-item current">
-                <span className={"art np-queue-art art-" + track.artwork}><Disc3 size={20}/></span>
+                <AlbumArt track={track} compact className="np-queue-art"/>
                 <span className="np-queue-info"><strong>{track.title}</strong><small>{track.artist}</small></span>
                 <AudioLines size={17}/>
               </div>
               <div className="np-queue-label">다음 곡 · 기본 데모 순서</div>
               {queue.map(item => <button key={item.id} className="np-queue-item" onClick={() => onTrack(item)}>
-                <span className={"art np-queue-art art-" + item.artwork}><Disc3 size={20}/></span>
+                <AlbumArt track={item} compact className="np-queue-art"/>
                 <span className="np-queue-info"><strong>{item.title}</strong><small>{item.artist}</small></span>
                 <Play size={15}/></button>)}
               {shuffle && <p className="np-queue-disclaimer">셔플을 사용하면 실제 재생 순서가 달라질 수 있어요.</p>}
