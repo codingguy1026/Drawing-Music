@@ -16,6 +16,11 @@ type RepeatMode = "off" | "all" | "one";
 
 const verseUrl = process.env.NEXT_PUBLIC_DRAWING_VERSE_URL?.trim() || "";
 const moods = ["전체", "편안", "밤", "집중", "에너지", "우주"];
+const constellationPoints = [
+  { left: "16%", top: "20%" }, { left: "75%", top: "21%" },
+  { left: "87%", top: "64%" }, { left: "26%", top: "81%" },
+  { left: "57%", top: "11%" },
+];
 
 export default function MusicHome() {
   const engine = useRef<DemoAudioEngine | null>(null);
@@ -278,7 +283,7 @@ export default function MusicHome() {
             <div className="section-head">
               <div><div className="section-kicker">{view === "search" ? "EXPLORE MUSIC" : view === "home" ? "CURATED FOR YOU" : "YOUR COLLECTION"}</div>
                 <h2>{sectionTitle} {view === "home" && <span className="section-note">✦</span>}</h2></div>
-              <span className="track-count">{visibleTracks.length}곡</span>
+              <div className="section-tools"><span className="track-count">{visibleTracks.length}곡</span><button className="create-inline" onClick={() => setCreating(true)}><Plus size={15}/> 재생목록 만들기</button></div>
             </div>
             <div className="track-table">
               <div className="track-table-header"><span>#</span><span>제목</span><span className="desktop-only">앨범</span><span className="desktop-only">분위기</span><span className="duration-head">시간</span><span/></div>
@@ -300,6 +305,27 @@ export default function MusicHome() {
                   </div>
                 </div>
               ) : <div className="empty-state"><Library size={30}/><strong>아직 여기는 조용하네.</strong><p>{view === "liked" ? "마음에 드는 곡에 하트를 눌러봐!" : view === "playlist" ? "곡 옆의 + 버튼으로 재생목록에 추가해 봐." : "다른 검색어나 분위기를 선택해 봐."}</p></div>}
+            </div>
+          </section>
+          <section className="soundmap-section">
+            <div className="soundmap-copy">
+              <div className="section-kicker"><Sparkles size={13}/> DRAWING SIGNATURE</div>
+              <h2>소리로 펼쳐지는<br/><span>나만의 별자리.</span></h2>
+              <p>사운드 콘스텔레이션의 별을 눌러봐. 서로 다른 다섯 개의 사운드가 네 음악 우주를 밝혀줄 거야.</p>
+              <span className="soundmap-caption">INTERACTIVE SOUND CONSTELLATION · DEMO</span>
+            </div>
+            <div className="soundmap-canvas">
+              <div className="orbit-ring ring-a"/><div className="orbit-ring ring-b"/>
+              <div className="orbit-heart"><AudioLines size={28}/></div>
+              {DEMO_TRACKS.slice(0,5).map((track, index) => (
+                <button key={track.id} type="button"
+                  className={"map-star art-" + track.artwork + (activeId === track.id && isPlaying ? " shining" : "")}
+                  style={constellationPoints[index]}
+                  onClick={() => playTrack(track)}
+                  aria-label={track.title + " 재생"} title={track.title}>
+                  <Music2 size={17}/>
+                </button>
+              ))}
             </div>
           </section>
           <section className="connection-panel">
