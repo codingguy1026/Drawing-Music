@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./drawing-id.css";
+import DrawingIdAuth from "../components/DrawingIdAuth";
 
 export const metadata: Metadata = {
   title: "Drawing Music | 음악을 그리다.",
@@ -11,7 +13,7 @@ export const viewport: Viewport = { themeColor: "#77777d", width: "device-width"
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>{children}<DrawingIdAuth /></body>
     </html>
   );
 }
