@@ -4,6 +4,7 @@ import {Heart,Play,Pause,SkipBack,SkipForward,Plus,Trash2,Search,Sun,Moon,Volume
 import {DEMO_TRACKS,displayTime,type DemoTrack} from "../lib/demoTracks";
 import {DemoAudioEngine} from "../lib/audioEngine";
 import AlbumArt from "../components/AlbumArt";
+import VibeDiscovery from "../components/VibeDiscovery";
 type Playlist={id:string;name:string;trackIds:string[]};
 type RepeatMode="off"|"all"|"one";
 const moods=["전체","편안","밤","집중","에너지","우주"];
@@ -38,10 +39,11 @@ export default function MusicHome(){
  const tracks=useMemo(()=>DEMO_TRACKS.filter(t=>(mood==="전체"||t.mood===mood)&&(genre==="전체"||t.genre===genre)&&[t.title,t.artist,t.album,t.genre,t.mood].some(s=>s.toLowerCase().includes(query.trim().toLowerCase()))),[mood,genre,query]);
  const wave=Array.from({length:42},(_,i)=>18+((Math.round(active.notes[i%active.notes.length]*7)+i*19)%74));
  return <div className={dark?"classic dark":"classic"}>
-  <header className="classic-header"><a href="#home" className="classic-brand">Drawing Music</a><nav aria-label="사이트 메뉴"><a href="#discover">음악</a><a href="#library">보관함</a><a href="#visualizer">시각화</a><a href="#connection">연동</a><button onClick={()=>setDark(v=>!v)} aria-label={dark?"라이트 모드":"다크 모드"}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button></nav></header>
+  <header className="classic-header"><a href="#home" className="classic-brand">Drawing Music</a><nav aria-label="사이트 메뉴"><a href="#for-you">추천</a><a href="#discover">탐색</a><a href="#library">보관함</a><a href="#connection">연동</a><button onClick={()=>setDark(v=>!v)} aria-label={dark?"라이트 모드":"다크 모드"}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button></nav></header>
   <main>
-   <section id="home" className="classic-hero"><span className="classic-eyebrow">DRAWING MUSIC · CLASSIC</span><h1>Drawing Music</h1><p>음악을 그리다.</p><a className="classic-enter" href="#discover">음악 둘러보기 ↓</a></section>
+   <section id="home" className="classic-hero"><span className="classic-eyebrow">DRAWING MUSIC · 2025 × 2026</span><h1>Drawing Music</h1><p>음악을 그리다.</p><p className="classic-hero-subtitle">2025년의 취향 발견과 2026년의 플레이어, 하나의 음악 공간에서.</p><a className="classic-enter" href="#discover">음악 둘러보기 ↓</a></section>
    <div className="classic-container">
+    <VibeDiscovery tracks={DEMO_TRACKS} liked={liked} recent={recent} onPlay={playTrack} onLike={toggleLike}/>
     <section id="discover" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DISCOVER</span><h2>음악 탐색</h2><p>Drawing Music의 오리지널 데모 음악을 만나보세요.</p></div><span className="classic-counter">{tracks.length}곡</span></div>
      <div className="classic-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡명, 아티스트, 장르 검색" aria-label="음악 검색"/></div>
      <div className="classic-filters">{moods.map(m=><button key={m} className={mood===m?"selected":""} onClick={()=>setMood(m)}>{m}</button>)}</div>
