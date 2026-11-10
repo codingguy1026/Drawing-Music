@@ -9,6 +9,7 @@ import AlbumArt from "./AlbumArt";
 
 type Props = {
   track: DemoTrack;
+  queueTracks?: DemoTrack[];
   progress: number;
   playing: boolean;
   liked: boolean;
@@ -37,7 +38,7 @@ const ALBUM_LIGHT: Record<string, { rgb: string; glow: string }> = {
 
 export default function NowPlayingPanel({
   track, progress, playing, liked, shuffle, repeat, onClose, onSeek, onToggle,
-  onPrevious, onNext, onLike, onShuffle, onRepeat, onTrack,
+  onPrevious, onNext, onLike, onShuffle, onRepeat, onTrack, queueTracks,
 }: Props) {
   const [tab, setTab] = useState<"queue" | "details">("queue");
 
@@ -54,9 +55,10 @@ export default function NowPlayingPanel({
     "--np-glow-rgb": palette.rgb,
     "--np-glow-color": palette.glow,
   } as CSSProperties;
-  const currentIndex = DEMO_TRACKS.findIndex(item => item.id === track.id);
-  const queue = Array.from({ length: DEMO_TRACKS.length - 1 }, (_, index) =>
-    DEMO_TRACKS[(currentIndex + index + 1) % DEMO_TRACKS.length]
+  const playbackList = queueTracks?.length ? queueTracks : DEMO_TRACKS;
+  const currentIndex = Math.max(0, playbackList.findIndex(item => item.id === track.id));
+  const queue = Array.from({ length: Math.max(0, playbackList.length - 1) }, (_, index) =>
+    playbackList[(currentIndex + index + 1) % playbackList.length]
   );
   // Demo visual levels derived from each note, not analyzed from a recording.
   const waveform = Array.from({ length: 68 }, (_, index) => {

@@ -82,3 +82,9 @@ The glow is a hand-curated palette associated with demo artwork, **not** signal 
 ## Color Bloom visual refresh (November 2026)
 
 The Classic homepage uses a brighter pastel palette (lilac, peach, mint) with a colorful album-art hero, glass navigation, more expressive discovery cards, and a tinted persistent playback bar. Dark mode retains its toggle but uses deep plum and emerald accents instead of flat charcoal. Playback, recommendations, likes, playlists, and account integration are unchanged. This is a CSS and markup redesign, not a new music catalog.
+
+## Studio Hub: a real browsing structure
+
+The modern Drawing Music homepage now includes a sticky desktop section rail, a recent-listening carousel/grid based on local history, 3 original album collections with expandable tracklists, and 3 ready-to-play themed mixes. Album and mix play actions create an **in-memory queue** so tracks advance within the selection, including the expanded player's visible upcoming queue. Starting an individual track returns to the full demo catalog sequence. Saved likes, searches, recommendations, playlists, the procedural audio engine, dark mode, and the Drawing ID integration remain in place.
+
+The three releases and mixes are editorial groupings of the existing six original synthesized demos. They are not third-party albums, a commercial catalog, or a claim of real chart/streaming activity. Music discovery remains entirely client-side.
