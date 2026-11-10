@@ -92,3 +92,9 @@ The three releases and mixes are editorial groupings of the existing six origina
 ## Distinct screen navigation
 
 The sidebar selects hash-addressable views for Home, Albums, Mixes, For You, Discovery, Library, Visualizer and Drawing Connection. Legacy hash aliases are supported, and mobile gets a horizontal menu. The audio engine remains mounted above the screen switching layer, preserving playback on navigation.
+
+## Drawing ID public browser configuration fallback
+
+The login modal requires a Supabase URL plus a publishable key. Some deployments were built without those browser environment variables and showed a "server not configured" message. The intended shared Drawing ID project's URL and **publishable, non-privileged** key were already present in `.env.example`, and the project's status and key were verified. The browser now falls back to those public values **only when both environment variables are absent**. If only one is provided, authentication fails closed rather than combining mismatched settings.
+
+Configure BOTH `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the deployed environment for production and key rotation. Never use any secret or service-role key in browser code. A **successful new deployment is still required** for this fix to appear on the website; it does not resolve Vercel deployment errors. Email confirmations and redirect allowlists must be configured in Supabase Auth for the verified production domain. A real user login was not tested by this code change.

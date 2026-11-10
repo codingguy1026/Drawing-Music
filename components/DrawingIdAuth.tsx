@@ -1,9 +1,8 @@
 "use client";
 import {useEffect,useState} from "react";
 import {createBrowserClient} from "@supabase/ssr";
-const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-const db=url&&key?createBrowserClient(url,key):null;
+import {publicAuthConfig} from "../lib/publicAuthConfig";
+const db=publicAuthConfig?createBrowserClient(publicAuthConfig.url,publicAuthConfig.publishableKey):null;
 export default function DrawingIdAuth({inline=false}){
  const [user,setUser]=useState({email:"",logged:false});
  const [open,setOpen]=useState(false),[mode,setMode]=useState("login"),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
@@ -22,7 +21,7 @@ export default function DrawingIdAuth({inline=false}){
    <section className="di-card" role="dialog" aria-modal="true" aria-labelledby="di-title">
     <button type="button" className="di-close" onClick={()=>setOpen(false)} disabled={busy} aria-label="닫기">×</button>
     <div className="di-logo">D.</div><h2 id="di-title">Drawing ID</h2><p className="di-note">하나의 계정으로 모든 Drawing 서비스를 이용하세요.</p>
-    {!db?<p className="di-msg">인증 서버 연결이 설정되지 않았어요. 운영자에게 문의해 주세요.</p>
+    {!db?<p className="di-msg" role="alert">인증 서버 설정이 일부만 입력되어 연결되지 않았어요. 배포 설정에서 Supabase URL과 공개용 키를 함께 확인해 주세요.</p>
     :user.logged?<div className="di-account"><strong>✅ 로그인 완료</strong><p>{user.email||"Drawing ID"}</p><button type="button" onClick={logout} disabled={busy} className="di-submit">이 서비스에서 로그아웃</button></div>
     :<>{process.env.NEXT_PUBLIC_DRAWING_SSO_ENABLED === "true" && <a href="/api/drawing-id/start" className="di-submit" style={{display:"block",textDecoration:"none",marginBottom:14}}>🔐 Drawing ID로 계속하기 →</a>}<div className="di-tabs">
       <button type="button" className={mode==="login"?"active":""} onClick={()=>{setMode("login");setMessage("")}}>로그인</button>
@@ -34,7 +33,14 @@ export default function DrawingIdAuth({inline=false}){
        try{
         if(mode==="login"){const {data,error}=await db.auth.signInWithPassword({email:email.trim(),password});if(error)throw error;if(data.user){setUser({email:data.user.email||"",logged:true});setPassword("");setOpen(false)}}
         else{const {data,error}=await db.auth.signUp({email:email.trim(),password});if(error)throw error;setPassword("");if(data.session&&data.user){setUser({email:data.user.email||"",logged:true});setOpen(false)}else setMessage("가입 요청이 접수됐어요. 필요하다면 인증 이메일을 확인해 주세요.");}
-       }catch(error){const m=error instanceof Error?error.message:"";setMessage(m.includes("Invalid login credentials")?"이메일 또는 비밀번호가 잘못되었습니다.":m||"로그인에 실패했어요.");}finally{setBusy(false)}
+       }catch(error){
+         const m=error instanceof Error?error.message:"";
+         const code=error&&typeof error==="object"&&"code" in error?String(error.code):"";
+         setMessage(code==="invalid_credentials"||m.includes("Invalid login credentials")?"이메일 또는 비밀번호가 올바르지 않아요."
+          :code==="email_not_confirmed"?"이메일 인증을 완료한 후 로그인해 주세요."
+          :m.includes("Failed to fetch")?"인증 서버에 연결하지 못했어요. 네트워크를 확인해 주세요."
+          :m||"로그인에 실패했어요.");
+       }finally{setBusy(false)}
       }}>
        <label htmlFor="di-email">이메일</label><input id="di-email" type="email" autoComplete="email" value={email} maxLength={254} onChange={e=>setEmail(e.target.value)} required placeholder="name@example.com"/>
        <label htmlFor="di-pass">비밀번호</label><input id="di-pass" type="password" autoComplete={mode==="login"?"current-password":"new-password"} minLength={mode==="signup"?8:undefined} value={password} onChange={e=>setPassword(e.target.value)} required/>
