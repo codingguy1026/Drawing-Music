@@ -8,6 +8,7 @@ import VibeDiscovery from "../components/VibeDiscovery";
 import NowPlayingPanel from "../components/NowPlayingPanel";
 import MusicSidebar from "../components/MusicSidebar";
 import ListeningHub from "../components/ListeningHub";
+import {MUSIC_INFO,musicViewFromHash,type MusicView} from "../lib/musicNavigation";
 type Playlist={id:string;name:string;trackIds:string[]};
 type RepeatMode="off"|"all"|"one";
 const moods=["전체","편안","밤","집중","에너지","우주"];
@@ -21,6 +22,12 @@ export default function MusicHome(){
  const [notice,setNotice]=useState(""),[addId,setAddId]=useState<string|null>(null);
  const [expanded,setExpanded]=useState(false);
  const [queueIds,setQueueIds]=useState<string[]|null>(null);
+ const [view,setView]=useState<MusicView>("home");
+ useEffect(()=>{
+  const syncView=()=>{setView(musicViewFromHash(window.location.hash));window.scrollTo(0,0);};
+  syncView();window.addEventListener("hashchange",syncView);
+  return()=>window.removeEventListener("hashchange",syncView);
+ },[]);
  const active=DEMO_TRACKS.find(t=>t.id===activeId)||DEMO_TRACKS[0];
  const selectedList=playlists.find(p=>p.id===selected);
  const queue=useMemo(()=>queueIds===null?DEMO_TRACKS:queueIds.map(id=>DEMO_TRACKS.find(t=>t.id===id)).filter((t):t is DemoTrack=>Boolean(t)),[queueIds]);
@@ -47,14 +54,18 @@ export default function MusicHome(){
  const tracks=useMemo(()=>DEMO_TRACKS.filter(t=>(mood==="전체"||t.mood===mood)&&(genre==="전체"||t.genre===genre)&&[t.title,t.artist,t.album,t.genre,t.mood].some(s=>s.toLowerCase().includes(query.trim().toLowerCase()))),[mood,genre,query]);
  const wave=Array.from({length:42},(_,i)=>18+((Math.round(active.notes[i%active.notes.length]*7)+i*19)%74));
  return <div className={dark?"classic dark":"classic"}>
-  <header className="classic-header"><a href="#home" className="classic-brand"><span className="classic-brand-mark"><AudioLines size={20}/></span><span>Drawing <strong>Music</strong></span></a><nav aria-label="사이트 메뉴"><a href="#for-you">추천</a><a href="#discover">탐색</a><a href="#library">보관함</a><a href="#connection">연동</a><button className="classic-theme-toggle" onClick={()=>setDark(v=>!v)} aria-label={dark?"라이트 모드":"다크 모드"}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button></nav></header>
-  <div className="music-shell"><MusicSidebar active={active} playing={playing} likedCount={liked.length} playlistCount={playlists.length}/><div className="music-workspace"><main>
-   <section id="home" className="classic-hero">
+  <header className="classic-header"><a href="#/home" className="classic-brand"><span className="classic-brand-mark"><AudioLines size={20}/></span><span>Drawing <strong>Music</strong></span></a><nav aria-label="사이트 메뉴"><a href="#/for-you">추천</a><a href="#/discover">탐색</a><a href="#/library">보관함</a><a href="#/connection">연동</a><button className="classic-theme-toggle" onClick={()=>setDark(v=>!v)} aria-label={dark?"라이트 모드":"다크 모드"}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button></nav></header>
+  <div className="music-shell"><MusicSidebar active={active} playing={playing} likedCount={liked.length} playlistCount={playlists.length} view={view}/><div className="music-workspace"><main>
+   {view!=="home"&&<div className="music-view-heading" aria-live="polite">
+      <span>DRAWING MUSIC / {view.toUpperCase()}</span>
+      <h1>{MUSIC_INFO[view].title}</h1><p>{MUSIC_INFO[view].subtitle}</p>
+    </div>}
+   {view==="home"&&<section id="home" className="classic-hero">
     <div className="classic-hero-copy">
       <span className="classic-eyebrow"><Sparkles size={13}/> 2025 × 2026 · DRAW YOUR SOUND</span>
       <h1>당신의 하루에<br/><em>음악으로 색을 칠해요.</em></h1>
       <p className="classic-hero-subtitle">새로운 음악을 발견하고, 나만의 취향을 기록하고, 좋아하는 순간을 플레이리스트에 담아보세요.</p>
-      <div className="classic-hero-actions"><a className="classic-enter" href="#for-you">내 취향 찾아보기 <ArrowUpRight size={17}/></a><button className="classic-hero-listen" type="button" onClick={()=>playDirect(active)}><Play size={16} fill="currentColor"/> 지금 들어보기</button></div>
+      <div className="classic-hero-actions"><a className="classic-enter" href="#/for-you">내 취향 찾아보기 <ArrowUpRight size={17}/></a><button className="classic-hero-listen" type="button" onClick={()=>playDirect(active)}><Play size={16} fill="currentColor"/> 지금 들어보기</button></div>
       <div className="classic-hero-foot"><span><Headphones size={16}/> ORIGINAL DEMO COLLECTION</span><span className="classic-hero-foot-separator">✦</span><span>LISTEN IN COLOR</span></div>
     </div>
     <div className="classic-hero-scene" aria-hidden="true">
@@ -64,26 +75,27 @@ export default function MusicHome(){
       <div className="classic-hero-album"><AlbumArt track={active} playing={playing} className="classic-hero-cover"/><span className="classic-hero-album-sticker">DM / 26</span></div>
       <div className="classic-hero-capsule"><span className="classic-hero-capsule-dot"/><span>ON YOUR WAVELENGTH</span><AudioLines size={18}/></div>
     </div>
-   </section>
+   </section>}
    <div className="classic-container">
-    <ListeningHub tracks={DEMO_TRACKS} activeId={active.id} playing={playing} liked={liked} recent={recent}
-      onPlay={playDirect} onPlayCollection={playCollection} onLike={toggleLike} onAdd={setAddId}/>
-    <VibeDiscovery tracks={DEMO_TRACKS} liked={liked} recent={recent} onPlay={playDirect} onLike={toggleLike}/>
-    <section id="discover" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DISCOVER</span><h2>음악 탐색</h2><p>Drawing Music의 오리지널 데모 음악을 만나보세요.</p></div><span className="classic-counter">{tracks.length}곡</span></div>
+    {(view==="home"||view==="albums"||view==="mixes")&&
+      <ListeningHub view={view} tracks={DEMO_TRACKS} activeId={active.id} playing={playing} liked={liked} recent={recent}
+        onPlay={playDirect} onPlayCollection={playCollection} onLike={toggleLike} onAdd={setAddId}/>}
+    {view==="for-you"&&<VibeDiscovery tracks={DEMO_TRACKS} liked={liked} recent={recent} onPlay={playDirect} onLike={toggleLike}/>}
+    {view==="discover"&&<section id="discover" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DISCOVER</span><h2>음악 탐색</h2><p>Drawing Music의 오리지널 데모 음악을 만나보세요.</p></div><span className="classic-counter">{tracks.length}곡</span></div>
      <div className="classic-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡명, 아티스트, 장르 검색" aria-label="음악 검색"/></div>
      <div className="classic-filters">{moods.map(m=><button key={m} className={mood===m?"selected":""} onClick={()=>setMood(m)}>{m}</button>)}</div>
      <div className="classic-filters genres">{genres.map(g=><button key={g} className={genre===g?"selected":""} onClick={()=>setGenre(g)}>{g}</button>)}</div>
      <div className="classic-tracks">{tracks.length?tracks.map(t=><article className="classic-track" key={t.id}><button className="classic-track-main" onClick={()=>playDirect(t)}><AlbumArt track={t} compact className="classic-art"/><span><strong>{t.title}</strong><small>{t.artist} · {t.album}</small></span></button><span className="classic-track-mood">{t.mood} · {t.genre}</span><span className="classic-duration">{displayTime(t.duration)}</span><button className={liked.includes(t.id)?"liked":""} aria-label={t.title+" 좋아요"} onClick={()=>toggleLike(t.id)}><Heart size={19} fill={liked.includes(t.id)?"currentColor":"none"}/></button><button aria-label={t.title+" 재생목록에 추가"} onClick={()=>setAddId(t.id)}><Plus size={19}/></button></article>):<p className="classic-empty">검색 결과가 없어요.</p>}</div>
-    </section>
-    <section id="library" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">YOUR LIBRARY</span><h2>내 보관함</h2><p>좋아하는 음악과 재생목록을 한곳에.</p></div></div>
+    </section>}
+    {view==="library"&&<section id="library" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">YOUR LIBRARY</span><h2>내 보관함</h2><p>좋아하는 음악과 재생목록을 한곳에.</p></div></div>
      <div className="classic-library"><div className="classic-panel"><h3><Heart size={18}/> 좋아하는 음악 <span>{liked.length}</span></h3>{liked.length?DEMO_TRACKS.filter(t=>liked.includes(t.id)).map(t=><button className="classic-mini" key={t.id} onClick={()=>playDirect(t)}><Play size={15}/>{t.title}</button>):<p className="classic-empty">음악 옆의 하트를 눌러 담아보세요.</p>}</div>
       <div className="classic-panel"><h3><ListMusic size={18}/> 내 플레이리스트</h3><form className="classic-newlist" onSubmit={e=>{e.preventDefault();createList()}}><input value={newName} onChange={e=>setNewName(e.target.value)} maxLength={50} placeholder="새 재생목록 이름" aria-label="새 재생목록 이름"/><button type="submit" disabled={!newName.trim()}><Plus size={17}/> 만들기</button></form>
       <div className="classic-list-tabs">{playlists.map(p=><button key={p.id} className={selected===p.id?"selected":""} onClick={()=>setSelected(p.id)}>{p.name} ({p.trackIds.length})</button>)}</div>
       {selectedList&&<div className="classic-selected"><div className="classic-selected-head"><strong>{selectedList.name}</strong><button onClick={()=>{if(window.confirm("재생목록을 삭제할까요?")){setPlaylists(old=>old.filter(p=>p.id!==selected));setSelected(null)}}} aria-label="재생목록 삭제"><Trash2 size={17}/></button></div>
       {selectedList.trackIds.length?selectedList.trackIds.map(id=>{const t=DEMO_TRACKS.find(x=>x.id===id);return t?<div key={id} className="classic-mini-row"><button onClick={()=>playDirect(t)}><Play size={14}/>{t.title}</button><button aria-label={t.title+" 제거"} onClick={()=>setPlaylists(old=>old.map(p=>p.id===selected?{...p,trackIds:p.trackIds.filter(x=>x!==id)}:p))}><X size={15}/></button></div>:null}):<p className="classic-empty">음악 목록에서 + 버튼으로 곡을 추가하세요.</p>}</div>}</div></div>
-    </section>
-    <section id="visualizer" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DRAW THE SOUND</span><h2>음악을 그리다.</h2><p>재생 중인 데모 멜로디를 색과 리듬으로 표현해요.</p></div></div><div className="classic-visual"><div className="classic-visual-top"><AudioLines size={20}/><span>{active.title} · {playing?"재생 중":"일시정지"}</span></div><div className="classic-wave" aria-label="데모 음표를 기반으로 만든 시각화">{wave.map((h,i)=><span key={i} className={playing?"moving":""} style={{height:h+"%",animationDelay:(i%8)*-.11+"s"}}/>)}</div><small>실제 음원 파형 분석이 아닌 음표 데이터 기반 시각화입니다.</small></div></section>
-    <section id="connection" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DRAWING ECOSYSTEM</span><h2>Drawing Verse 연동</h2><p>음악 유니버스와 현재 듣는 음악 공유 기능을 준비하고 있어요.</p></div></div><div className="classic-connection"><Orbit size={26}/><div><strong>Drawing Verse × Drawing Music</strong><p>계정 연동과 프로필 활동 표시는 아직 연결되지 않았습니다.</p></div>{verseUrl?<a href={verseUrl} target="_blank" rel="noopener noreferrer">Drawing Verse ↗</a>:<span>연동 준비 중</span>}</div></section>
+    </section>}
+    {view==="visualizer"&&<section id="visualizer" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DRAW THE SOUND</span><h2>음악을 그리다.</h2><p>재생 중인 데모 멜로디를 색과 리듬으로 표현해요.</p></div></div><div className="classic-visual"><div className="classic-visual-top"><AudioLines size={20}/><span>{active.title} · {playing?"재생 중":"일시정지"}</span></div><div className="classic-wave" aria-label="데모 음표를 기반으로 만든 시각화">{wave.map((h,i)=><span key={i} className={playing?"moving":""} style={{height:h+"%",animationDelay:(i%8)*-.11+"s"}}/>)}</div><small>실제 음원 파형 분석이 아닌 음표 데이터 기반 시각화입니다.</small></div></section>}
+    {view==="connection"&&<section id="connection" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DRAWING ECOSYSTEM</span><h2>Drawing Verse 연동</h2><p>음악 유니버스와 현재 듣는 음악 공유 기능을 준비하고 있어요.</p></div></div><div className="classic-connection"><Orbit size={26}/><div><strong>Drawing Verse × Drawing Music</strong><p>계정 연동과 프로필 활동 표시는 아직 연결되지 않았습니다.</p></div>{verseUrl?<a href={verseUrl} target="_blank" rel="noopener noreferrer">Drawing Verse ↗</a>:<span>연동 준비 중</span>}</div></section>}
    </div>
   </main></div></div>
   <footer className="classic-player"><div className="classic-player-track"><AlbumArt track={active} compact className="classic-player-art"/><div><strong>{active.title}</strong><small>{active.artist}</small></div><button aria-label="현재 곡 좋아요" className={liked.includes(active.id)?"liked":""} onClick={()=>toggleLike(active.id)}><Heart size={17} fill={liked.includes(active.id)?"currentColor":"none"}/></button><button className="classic-expand" aria-label="확장 플레이어 열기" title="앨범 몰입형 플레이어" onClick={()=>setExpanded(true)}><Maximize2 size={18}/></button></div>

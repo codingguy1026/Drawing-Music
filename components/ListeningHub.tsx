@@ -11,6 +11,7 @@ import { displayTime } from "../lib/demoTracks";
 
 type Props = {
   tracks: DemoTrack[];
+  view: "home" | "albums" | "mixes";
   activeId: string;
   playing: boolean;
   liked: string[];
@@ -42,7 +43,7 @@ const MIXES = [
 ] as const;
 
 export default function ListeningHub({
-  tracks, activeId, playing, liked, recent, onPlay, onPlayCollection, onLike, onAdd,
+  tracks, view, activeId, playing, liked, recent, onPlay, onPlayCollection, onLike, onAdd,
 }: Props) {
   const albums = useMemo<Album[]>(() => {
     const groups = new Map<string, DemoTrack[]>();
@@ -68,13 +69,13 @@ export default function ListeningHub({
 
   return (
     <div className="hub" aria-label="앨범과 플레이리스트 탐색">
-      <section className="hub-recent" aria-labelledby="hub-recent-title">
+      {view==="home"&&<section className="hub-recent" aria-labelledby="hub-recent-title">
         <div className="hub-heading">
           <div><span className="hub-kicker"><AudioLines size={14}/> LISTEN AGAIN</span>
             <h2 id="hub-recent-title">{firstListen ? "이 음악부터 시작해 볼까요?" : "다시 듣고 싶은 순간"}</h2>
             <p>{firstListen ? "처음 방문했다면 이 오리지널 데모를 추천해요." : "이 브라우저에서 최근 재생했던 음악이에요."}</p>
           </div>
-          <a href="#discover">전체 음악 <ArrowRight size={17}/></a>
+          <a href="#/discover">전체 음악 <ArrowRight size={17}/></a>
         </div>
         <div className="hub-recent-grid">
           {listeningRows.map(track => (
@@ -85,9 +86,13 @@ export default function ListeningHub({
             </button>
           ))}
         </div>
-      </section>
-
-      <section id="collection" className="hub-collection" aria-labelledby="hub-albums-title">
+      </section>}
+      {view==="home"&&<div className="hub-home-navigation" aria-label="공간 이동">
+       <a href="#/albums"><Disc3 size={20}/><span><strong>앨범 컬렉션</strong><small>앨범으로 음악 감상하기</small></span><ArrowRight size={16}/></a>
+       <a href="#/mixes"><Radio size={20}/><span><strong>오늘의 믹스</strong><small>분위기에 맞춰 연속 재생</small></span><ArrowRight size={16}/></a>
+       <a href="#/for-you"><Sparkles size={20}/><span><strong>취향 스튜디오</strong><small>취향에 맞는 음악 추천</small></span><ArrowRight size={16}/></a>
+      </div>}
+      {view==="albums"&&<section id="collection" className="hub-collection" aria-labelledby="hub-albums-title">
         <div className="hub-heading">
           <div><span className="hub-kicker"><Disc3 size={14}/> THE DRAWING DISCOGRAPHY</span>
             <h2 id="hub-albums-title">앨범으로 만나는 음악</h2>
@@ -127,9 +132,9 @@ export default function ListeningHub({
             </div>
           </div>
         )}
-      </section>
+      </section>}
 
-      <section id="mixes" className="hub-mixes" aria-labelledby="hub-mixes-title">
+      {view==="mixes"&&<section id="mixes" className="hub-mixes" aria-labelledby="hub-mixes-title">
         <div className="hub-heading">
           <div><span className="hub-kicker"><Radio size={14}/> READY-TO-PLAY MIXES</span>
             <h2 id="hub-mixes-title">지금 기분엔 어떤 색?</h2>
@@ -146,7 +151,7 @@ export default function ListeningHub({
             </button>
           ))}
         </div>
-      </section>
+      </section>}
     </div>
   );
 }

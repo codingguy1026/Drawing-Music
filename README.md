@@ -88,3 +88,7 @@ The Classic homepage uses a brighter pastel palette (lilac, peach, mint) with a 
 The modern Drawing Music homepage now includes a sticky desktop section rail, a recent-listening carousel/grid based on local history, 3 original album collections with expandable tracklists, and 3 ready-to-play themed mixes. Album and mix play actions create an **in-memory queue** so tracks advance within the selection, including the expanded player's visible upcoming queue. Starting an individual track returns to the full demo catalog sequence. Saved likes, searches, recommendations, playlists, the procedural audio engine, dark mode, and the Drawing ID integration remain in place.
 
 The three releases and mixes are editorial groupings of the existing six original synthesized demos. They are not third-party albums, a commercial catalog, or a claim of real chart/streaming activity. Music discovery remains entirely client-side.
+
+## Distinct screen navigation
+
+The sidebar selects hash-addressable views for Home, Albums, Mixes, For You, Discovery, Library, Visualizer and Drawing Connection. Legacy hash aliases are supported, and mobile gets a horizontal menu. The audio engine remains mounted above the screen switching layer, preserving playback on navigation.
