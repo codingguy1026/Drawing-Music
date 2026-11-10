@@ -7,6 +7,7 @@ import AlbumArt from "../components/AlbumArt";
 import VibeDiscovery from "../components/VibeDiscovery";
 import NowPlayingPanel from "../components/NowPlayingPanel";
 import MusicSidebar from "../components/MusicSidebar";
+import PlaylistTransfer, {type PortablePlaylist} from "../components/PlaylistTransfer";
 import ListeningHub from "../components/ListeningHub";
 import {MUSIC_INFO,musicViewFromHash,type MusicView} from "../lib/musicNavigation";
 type Playlist={id:string;name:string;trackIds:string[]};
@@ -50,6 +51,7 @@ export default function MusicHome(){
  const toggleLike=(id:string)=>setLiked(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id]);
  const createList=()=>{const name=newName.trim().slice(0,50);if(!name)return;const id="list-"+Date.now().toString(36);setPlaylists(old=>[...old,{id,name,trackIds:addId?[addId]:[]}]);setSelected(id);setNewName("");setAddId(null)};
  const addTo=(listId:string,trackId:string)=>{setPlaylists(old=>old.map(p=>p.id===listId?{...p,trackIds:p.trackIds.includes(trackId)?p.trackIds:[...p.trackIds,trackId]}:p));setAddId(null);setNotice("재생목록에 추가했어요.")};
+ const importLists=(items:PortablePlaylist[])=>{const stamp=Date.now().toString(36);setPlaylists(old=>[...old,...items.map((p,index)=>({id:`import-${stamp}-${index}`,name:p.name,trackIds:p.trackIds}))]);};
  const genres=useMemo(()=>["전체",...new Set(DEMO_TRACKS.map(t=>t.genre))],[]);
  const tracks=useMemo(()=>DEMO_TRACKS.filter(t=>(mood==="전체"||t.mood===mood)&&(genre==="전체"||t.genre===genre)&&[t.title,t.artist,t.album,t.genre,t.mood].some(s=>s.toLowerCase().includes(query.trim().toLowerCase()))),[mood,genre,query]);
  const wave=Array.from({length:42},(_,i)=>18+((Math.round(active.notes[i%active.notes.length]*7)+i*19)%74));
@@ -89,7 +91,7 @@ export default function MusicHome(){
     </section>}
     {view==="library"&&<section id="library" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">YOUR LIBRARY</span><h2>내 보관함</h2><p>좋아하는 음악과 재생목록을 한곳에.</p></div></div>
      <div className="classic-library"><div className="classic-panel"><h3><Heart size={18}/> 좋아하는 음악 <span>{liked.length}</span></h3>{liked.length?DEMO_TRACKS.filter(t=>liked.includes(t.id)).map(t=><button className="classic-mini" key={t.id} onClick={()=>playDirect(t)}><Play size={15}/>{t.title}</button>):<p className="classic-empty">음악 옆의 하트를 눌러 담아보세요.</p>}</div>
-      <div className="classic-panel"><h3><ListMusic size={18}/> 내 플레이리스트</h3><form className="classic-newlist" onSubmit={e=>{e.preventDefault();createList()}}><input value={newName} onChange={e=>setNewName(e.target.value)} maxLength={50} placeholder="새 재생목록 이름" aria-label="새 재생목록 이름"/><button type="submit" disabled={!newName.trim()}><Plus size={17}/> 만들기</button></form>
+      <div className="classic-panel"><h3><ListMusic size={18}/> 내 플레이리스트</h3><PlaylistTransfer playlists={playlists} knownTrackIds={DEMO_TRACKS.map(t=>t.id)} onImport={importLists}/><form className="classic-newlist" onSubmit={e=>{e.preventDefault();createList()}}><input value={newName} onChange={e=>setNewName(e.target.value)} maxLength={50} placeholder="새 재생목록 이름" aria-label="새 재생목록 이름"/><button type="submit" disabled={!newName.trim()}><Plus size={17}/> 만들기</button></form>
       <div className="classic-list-tabs">{playlists.map(p=><button key={p.id} className={selected===p.id?"selected":""} onClick={()=>setSelected(p.id)}>{p.name} ({p.trackIds.length})</button>)}</div>
       {selectedList&&<div className="classic-selected"><div className="classic-selected-head"><strong>{selectedList.name}</strong><button onClick={()=>{if(window.confirm("재생목록을 삭제할까요?")){setPlaylists(old=>old.filter(p=>p.id!==selected));setSelected(null)}}} aria-label="재생목록 삭제"><Trash2 size={17}/></button></div>
       {selectedList.trackIds.length?selectedList.trackIds.map(id=>{const t=DEMO_TRACKS.find(x=>x.id===id);return t?<div key={id} className="classic-mini-row"><button onClick={()=>playDirect(t)}><Play size={14}/>{t.title}</button><button aria-label={t.title+" 제거"} onClick={()=>setPlaylists(old=>old.map(p=>p.id===selected?{...p,trackIds:p.trackIds.filter(x=>x!==id)}:p))}><X size={15}/></button></div>:null}):<p className="classic-empty">음악 목록에서 + 버튼으로 곡을 추가하세요.</p>}</div>}</div></div>
