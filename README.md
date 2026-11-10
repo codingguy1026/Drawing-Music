@@ -71,3 +71,10 @@ The 2025 recommendation experiment is now adapted to the 2026 Classic home page.
 No third-party music is added. This remains a local demo prototype.
 
 > Build note: the standalone archived 2025 project has its own dependencies and tsconfig. The root TypeScript project excludes `legacy/` so archived auth experiments never affect the current app's production build.
+
+
+## Album-reactive immersive player
+
+The persistent Classic player now exposes an **expand** button. It opens the existing Now Playing panel with a 2025-paper-glass-inspired album stage and per-track color palettes. Play/pause, previous/next, seek, queue, repeat, shuffle, like and Esc-to-close are wired into the same 2026 audio engine and browser-local library.
+
+The glow is a hand-curated palette associated with demo artwork, **not** signal analysis or third-party album imagery. The decorative waveform is still based on procedural demo note data. Expand is reversible, closing it does not stop audio.

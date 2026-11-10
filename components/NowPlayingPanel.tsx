@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { AudioLines, Disc3, Heart, ListMusic, Pause, Play, Repeat2, Shuffle, SkipBack, SkipForward, X } from "lucide-react";
 import type { DemoTrack } from "../lib/demoTracks";
 import { DEMO_TRACKS, displayTime } from "../lib/demoTracks";
@@ -24,6 +25,16 @@ type Props = {
   onTrack: (track: DemoTrack) => void;
 };
 
+
+const ALBUM_LIGHT: Record<string, { rgb: string; glow: string }> = {
+  afterglow: { rgb: "255, 199, 154", glow: "#ffd2ad" },
+  nightdrive: { rgb: "130, 104, 232", glow: "#bdafff" },
+  paperplanets: { rgb: "181, 204, 160", glow: "#d3e5bb" },
+  tidal: { rgb: "87, 205, 180", glow: "#a4f1dc" },
+  martianrain: { rgb: "216, 153, 145", glow: "#f4bab3" },
+  signal: { rgb: "113, 158, 187", glow: "#b5d9ea" },
+};
+
 export default function NowPlayingPanel({
   track, progress, playing, liked, shuffle, repeat, onClose, onSeek, onToggle,
   onPrevious, onNext, onLike, onShuffle, onRepeat, onTrack,
@@ -38,6 +49,11 @@ export default function NowPlayingPanel({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
+  const palette = ALBUM_LIGHT[track.artwork] ?? ALBUM_LIGHT.afterglow;
+  const paletteStyle = {
+    "--np-glow-rgb": palette.rgb,
+    "--np-glow-color": palette.glow,
+  } as CSSProperties;
   const currentIndex = DEMO_TRACKS.findIndex(item => item.id === track.id);
   const queue = Array.from({ length: DEMO_TRACKS.length - 1 }, (_, index) =>
     DEMO_TRACKS[(currentIndex + index + 1) % DEMO_TRACKS.length]
@@ -52,16 +68,20 @@ export default function NowPlayingPanel({
     <div className="np-backdrop" onMouseDown={event => {
       if (event.target === event.currentTarget) onClose();
     }}>
-      <section className="np-panel" role="dialog" aria-modal="true" aria-label="확장 음악 플레이어">
+      <section className="np-panel np-panel-fused" style={paletteStyle} role="dialog" aria-modal="true" aria-label="확장 음악 플레이어">
         <header className="np-header">
-          <div className="np-wordmark"><AudioLines size={22} /> DRAWING MUSIC <span>NOW PLAYING</span></div>
+          <div className="np-wordmark"><AudioLines size={22} /> DRAWING MUSIC <span>2025 × 2026 · NOW PLAYING</span></div>
           <button onClick={onClose} className="np-close" aria-label="확장 플레이어 닫기"><X size={21}/></button>
         </header>
         <div className="np-content">
           <div className="np-main">
-            <AlbumArt track={track} className="np-cover" playing={playing}/>
+            <div className="np-art-stage">
+              <div className="np-art-label"><span className="np-live-dot" /> IMMERSIVE LISTENING <span>DM / 2026</span></div>
+              <AlbumArt track={track} className="np-cover" playing={playing}/>
+              <div className="np-stage-caption">YOUR SOUND, IN COLOR <span>✦</span> ORIGINAL DEMO</div>
+            </div>
             <div className="np-track-meta">
-              <div><div className="np-eyebrow">LISTENING NOW</div>
+              <div><div className="np-eyebrow">NOW PLAYING · COLOR-REACTIVE STUDIO</div>
                 <h2>{track.title}</h2><p>{track.artist} · {track.album}</p></div>
               <button className={liked ? "icon-btn liked" : "icon-btn"} onClick={onLike} aria-label={liked ? "좋아요 취소" : "좋아요"}>
                 <Heart size={24} fill={liked ? "currentColor" : "none"}/></button>
@@ -89,7 +109,7 @@ export default function NowPlayingPanel({
                 <Repeat2 size={19}/>{repeat === "one" && <span className="repeat-one">1</span>}
               </button>
             </div>
-            <p className="np-disclaimer">파형은 데모 멜로디의 음을 바탕으로 만든 시각 패턴이며 실제 녹음 파형이 아니에요.</p>
+            <p className="np-disclaimer">앨범 색상은 디자인용 팔레트, 파형은 데모 멜로디 음표에서 만든 시각 패턴입니다. 실제 녹음 파일 분석 결과는 아니에요.</p>
           </div>
           <aside className="np-side">
             <div className="np-tabs" role="tablist" aria-label="재생 정보">

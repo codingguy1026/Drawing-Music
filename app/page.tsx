@@ -1,10 +1,11 @@
 "use client";
 import {useCallback,useEffect,useMemo,useRef,useState} from "react";
-import {Heart,Play,Pause,SkipBack,SkipForward,Plus,Trash2,Search,Sun,Moon,Volume2,ListMusic,Orbit,AudioLines,Shuffle,Repeat2,X} from "lucide-react";
+import {Heart,Play,Pause,SkipBack,SkipForward,Plus,Trash2,Search,Sun,Moon,Volume2,ListMusic,Orbit,AudioLines,Shuffle,Repeat2,X,Maximize2} from "lucide-react";
 import {DEMO_TRACKS,displayTime,type DemoTrack} from "../lib/demoTracks";
 import {DemoAudioEngine} from "../lib/audioEngine";
 import AlbumArt from "../components/AlbumArt";
 import VibeDiscovery from "../components/VibeDiscovery";
+import NowPlayingPanel from "../components/NowPlayingPanel";
 type Playlist={id:string;name:string;trackIds:string[]};
 type RepeatMode="off"|"all"|"one";
 const moods=["전체","편안","밤","집중","에너지","우주"];
@@ -16,6 +17,7 @@ export default function MusicHome(){
  const [hydrated,setHydrated]=useState(false),[dark,setDark]=useState(false),[query,setQuery]=useState(""),[mood,setMood]=useState("전체"),[genre,setGenre]=useState("전체");
  const [selected,setSelected]=useState<string|null>(null),[newName,setNewName]=useState(""),[shuffle,setShuffle]=useState(false),[repeat,setRepeat]=useState<RepeatMode>("off");
  const [notice,setNotice]=useState(""),[addId,setAddId]=useState<string|null>(null);
+ const [expanded,setExpanded]=useState(false);
  const active=DEMO_TRACKS.find(t=>t.id===activeId)||DEMO_TRACKS[0];
  const selectedList=playlists.find(p=>p.id===selected);
  useEffect(()=>{try{
@@ -61,10 +63,17 @@ export default function MusicHome(){
     <section id="connection" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DRAWING ECOSYSTEM</span><h2>Drawing Verse 연동</h2><p>음악 유니버스와 현재 듣는 음악 공유 기능을 준비하고 있어요.</p></div></div><div className="classic-connection"><Orbit size={26}/><div><strong>Drawing Verse × Drawing Music</strong><p>계정 연동과 프로필 활동 표시는 아직 연결되지 않았습니다.</p></div>{verseUrl?<a href={verseUrl} target="_blank" rel="noopener noreferrer">Drawing Verse ↗</a>:<span>연동 준비 중</span>}</div></section>
    </div>
   </main>
-  <footer className="classic-player"><div className="classic-player-track"><AlbumArt track={active} compact className="classic-player-art"/><div><strong>{active.title}</strong><small>{active.artist}</small></div><button aria-label="현재 곡 좋아요" className={liked.includes(active.id)?"liked":""} onClick={()=>toggleLike(active.id)}><Heart size={17} fill={liked.includes(active.id)?"currentColor":"none"}/></button></div>
+  <footer className="classic-player"><div className="classic-player-track"><AlbumArt track={active} compact className="classic-player-art"/><div><strong>{active.title}</strong><small>{active.artist}</small></div><button aria-label="현재 곡 좋아요" className={liked.includes(active.id)?"liked":""} onClick={()=>toggleLike(active.id)}><Heart size={17} fill={liked.includes(active.id)?"currentColor":"none"}/></button><button className="classic-expand" aria-label="확장 플레이어 열기" title="앨범 몰입형 플레이어" onClick={()=>setExpanded(true)}><Maximize2 size={18}/></button></div>
    <div className="classic-player-center"><div className="classic-controls"><button aria-label="셔플" className={shuffle?"selected":""} onClick={()=>setShuffle(v=>!v)}><Shuffle size={16}/></button><button aria-label="이전 곡" onClick={previous}><SkipBack size={18}/></button><button className="classic-play" aria-label={playing?"일시정지":"재생"} onClick={toggle}>{playing?<Pause size={20} fill="currentColor"/>:<Play size={20} fill="currentColor"/>}</button><button aria-label="다음 곡" onClick={()=>next()}><SkipForward size={18}/></button><button aria-label="반복 모드" className={repeat!=="off"?"selected":""} onClick={()=>setRepeat(r=>r==="off"?"all":r==="all"?"one":"off")}><Repeat2 size={16}/>{repeat==="one"&&<sup>1</sup>}</button></div><div className="classic-seek"><span>{displayTime(progress)}</span><input type="range" aria-label="재생 위치" min={0} max={active.duration} step={.1} value={Math.min(progress,active.duration)} onChange={e=>seek(Number(e.target.value))}/><span>{displayTime(active.duration)}</span></div></div>
    <div className="classic-volume"><Volume2 size={18}/><input aria-label="볼륨" type="range" min={0} max={100} value={volume} onChange={e=>{const v=Number(e.target.value);setVolume(v);engine.current?.setVolume(v/100)}}/></div>
   </footer>
+  {expanded&&<NowPlayingPanel track={active} progress={progress} playing={playing}
+     liked={liked.includes(active.id)} shuffle={shuffle} repeat={repeat}
+     onClose={()=>setExpanded(false)} onSeek={seek} onToggle={toggle}
+     onPrevious={previous} onNext={()=>next()} onLike={()=>toggleLike(active.id)}
+     onShuffle={()=>setShuffle(value=>!value)}
+     onRepeat={()=>setRepeat(current=>current==="off"?"all":current==="all"?"one":"off")}
+     onTrack={track=>playTrack(track)} />}
   {addId&&<div className="classic-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setAddId(null)}}><section role="dialog" aria-modal="true" aria-label="재생목록에 추가" className="classic-modal"><div className="classic-selected-head"><h3>재생목록에 추가</h3><button onClick={()=>setAddId(null)} aria-label="닫기"><X size={19}/></button></div>{playlists.length?playlists.map(p=><button className="classic-mini" key={p.id} onClick={()=>addTo(p.id,addId)}><Plus size={16}/>{p.name}</button>):<p className="classic-empty">먼저 아래에서 새 재생목록을 만드세요.</p>}<form className="classic-newlist" onSubmit={e=>{e.preventDefault();createList()}}><input placeholder="새 재생목록 이름" aria-label="새 재생목록 이름" value={newName} onChange={e=>setNewName(e.target.value)}/><button type="submit" disabled={!newName.trim()}>만들기</button></form></section></div>}
   {notice&&<div className="classic-notice" role="status" onClick={()=>setNotice("")}>{notice} ×</div>}
  </div>
