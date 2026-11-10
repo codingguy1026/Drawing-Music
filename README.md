@@ -98,3 +98,9 @@ The sidebar selects hash-addressable views for Home, Albums, Mixes, For You, Dis
 The login modal requires a Supabase URL plus a publishable key. Some deployments were built without those browser environment variables and showed a "server not configured" message. The intended shared Drawing ID project's URL and **publishable, non-privileged** key were already present in `.env.example`, and the project's status and key were verified. The browser now falls back to those public values **only when both environment variables are absent**. If only one is provided, authentication fails closed rather than combining mismatched settings.
 
 Configure BOTH `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the deployed environment for production and key rotation. Never use any secret or service-role key in browser code. A **successful new deployment is still required** for this fix to appear on the website; it does not resolve Vercel deployment errors. Email confirmations and redirect allowlists must be configured in Supabase Auth for the verified production domain. A real user login was not tested by this code change.
+
+## Playlist backup and restore (Liner-inspired portability)
+
+In **Library → My Playlists**, export your browser-local playlists as a `drawing-music-playlists.json` file and import the file later. Import adds new playlists without overwriting existing ones. Only track IDs from the current original demo library are restored; missing tracks are reported and skipped. Backups contain playlist names and demo track IDs, not audio, credentials, or listening history. This is **not** Spotify/Apple Music importing or a licensed music catalog.
+
+Import accepts the versioned `drawing-music-playlists` JSON format (up to 1 MB, 100 playlists, 5,000 track IDs per playlist). This feature is independently implemented and does not reuse Liner code.
