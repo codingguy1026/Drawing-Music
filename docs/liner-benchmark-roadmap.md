@@ -61,5 +61,15 @@
 - Maintain DMUSIC's independent visual identity rather than cloning Liner.
 - Test `npm run typecheck` and `npm run build` after each code implementation milestone.
 
+## P0 accessibility implementation
+- Native modal Now Playing: initial focus, keyboard containment, Escape dismissal, return to the opener, and background scroll lock.
+- Queue/details tabs: linked panels, one tab stop, Arrow Left/Right and Home/End navigation.
+- Screen-reader announcements for track changes; like/shuffle state, repeat mode and next mode, playback time, and volume labels.
+- Visible player focus rings and 44px playback button targets. A stacked narrow-screen player keeps shuffle and repeat available; expanded playback includes a shared volume control.
+- Existing playback notices are also shown inside Now Playing; notices can be dismissed with a keyboard. A single-track queue has an explicit empty state.
+- Audio engine lifetime, demo catalog, queue selection, likes, playlists and backup behavior remain unchanged.
+
+Verification: `npm run typecheck` and `npm run build`. Browser visual, keyboard and assistive-technology acceptance checks remain pending: this environment's managed preview launcher passes Vite-only flags (`--host`, `--strictPort`) to `next dev`, which rejects them. Do not treat the implementation as a completed browser accessibility audit.
+
 ## Next implementation slice
-**P0: playback accessibility pass.** Inspect player button labels and focus order; add missing keyboard and screen-reader support without altering playback logic. Commit the focused change after verification.
+**P0: playback state feedback.** Cover audio initialization/resume failures and player/library loading and empty states. Complete keyboard, narrow-screen and continuous-playback browser checks from Phase 1 in a compatible preview environment before marking that phase done.

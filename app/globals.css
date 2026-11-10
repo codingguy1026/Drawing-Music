@@ -299,7 +299,9 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;background:#ffddc9;bo
 .dialog-submit:disabled{opacity:.45}
 
 /* Expanded playback experience */
-.np-backdrop{position:fixed;z-index:80;inset:0;display:grid;place-items:center;background:#050a0dda;backdrop-filter:blur(16px);padding:22px}
+.np-backdrop{position:fixed;z-index:80;inset:0;display:grid;place-items:center;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;color:var(--dm-copy);background:#050a0dda;backdrop-filter:blur(16px);padding:22px}
+.np-backdrop:not([open]){display:none}
+.np-backdrop::backdrop{background:transparent}
 .np-panel{width:min(1030px,100%);max-height:calc(100dvh - 44px);overflow:hidden;display:flex;flex-direction:column;border:1px solid #41565e;border-radius:22px;background:#192329;box-shadow:0 40px 125px #000c}
 .np-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #34454c}
 .np-wordmark{display:flex;align-items:center;gap:9px;font-weight:900;letter-spacing:.06em;font-size:12px}
@@ -997,3 +999,41 @@ html{scroll-behavior:smooth}body{margin:0}
  .classic.dark .music-mobile-link.active{background:#b88be6;color:#271637!important}
 }
 @media(max-width:650px){.music-mobile-nav{top:66px;padding:8px 10px}.music-mobile-link{font-size:10px;padding:9px 10px}.music-view-heading{margin:13px 12px 0;padding:24px 18px}.hub-home-navigation{grid-template-columns:1fr;gap:9px}.hub-home-navigation a{padding:14px 16px}}
+
+/* P0 player accessibility: visible focus, touch targets and narrow screens. */
+.classic{padding-bottom:128px}
+.classic-player{grid-template-columns:minmax(160px,1fr) minmax(270px,1.3fr) minmax(128px,.7fr);padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.classic-player-center{min-width:0}
+.classic-player-track>div:nth-child(2){flex:1}
+.classic-player-track small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.classic-player button,.classic-player-track .classic-expand,.classic-controls .classic-play{width:44px;height:44px;flex-shrink:0}
+.classic-controls{gap:8px}
+.classic-player :focus-visible{outline:3px solid #7135ae;outline-offset:2px}
+.classic.dark .classic-player :focus-visible{outline-color:#ecd0ff}
+.classic-seek input{flex:1;min-width:0;width:0}
+.classic-seek span{flex-shrink:0;font-variant-numeric:tabular-nums}
+.classic-seek input,.classic-volume input,.np-volume input{height:28px;padding:12px 0;background-clip:content-box}
+.np-panel :focus-visible{outline:3px solid var(--dm-teal);outline-offset:2px}
+.np-panel [role=tabpanel]:focus-visible{outline-offset:-3px}
+.np-header{gap:12px}
+.np-close{flex-shrink:0;width:44px;height:44px}
+.np-controls{gap:clamp(8px,2vw,24px)}
+.np-controls .control,.np-track-meta .icon-btn{min-width:44px;min-height:44px;flex-shrink:0}
+.np-track-meta>div{min-width:0;overflow-wrap:anywhere}
+.np-volume{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:20px;color:#b9c5c7}
+.np-volume input{width:min(180px,55%);min-width:0}
+.np-volume span{min-width:4ch;font-size:12px;font-variant-numeric:tabular-nums}
+.np-feedback{margin:12px 0 0;color:#ffd2ad;font-size:13px;line-height:1.6}
+.np-feedback:empty{margin:0}
+.classic-notice{display:flex;align-items:center;gap:8px;bottom:calc(128px + env(safe-area-inset-bottom));max-width:calc(100% - 24px);padding:8px 12px;cursor:auto}
+.classic-notice button{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0}
+@media(max-width:720px){
+ .classic{padding-bottom:calc(180px + env(safe-area-inset-bottom))}
+ .classic-player{grid-template-columns:minmax(0,1fr);gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+ .classic-player-track{gap:8px}
+ .classic-player-track strong{font-size:12px}
+ .classic-controls button:first-child,.classic-controls button:last-child{display:inline-flex}
+ .classic-player-track .classic-expand,.classic-controls .classic-play{width:44px;height:44px}
+ .classic-notice{bottom:calc(180px + env(safe-area-inset-bottom));right:12px}
+ .np-main{padding-left:18px;padding-right:18px}
+}
