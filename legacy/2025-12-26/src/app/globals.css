@@ -1,0 +1,707 @@
+/* =========================================
+   Drawing Music — Global Design System
+   Dreamcore Paper + Glass + Ink UI
+   ========================================= */
+
+/* 1) TOKENS */
+:root {
+  --paper: #f7f4ef;
+  --ink: #1e1e1e;
+
+  --grape: #7a5cff;
+  --mint: #a8f0d1;
+  --peach: #ffc3a0;
+
+  --glass: rgba(255, 255, 255, 0.46);
+  --glass-strong: rgba(255, 255, 255, 0.62);
+  --stroke: rgba(0, 0, 0, 0.12);
+  --stroke-soft: rgba(0, 0, 0, 0.08);
+  --shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+
+  --container: 1040px;
+
+  --font-body: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+}
+
+/* DARK */
+:root[data-theme="dark"] {
+  --paper: #121212;
+  --ink: #f2f2f2;
+
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-strong: rgba(255, 255, 255, 0.10);
+  --stroke: rgba(255, 255, 255, 0.14);
+  --stroke-soft: rgba(255, 255, 255, 0.10);
+  --shadow: none;
+}
+
+/* 2) BASE RESET */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  overflow-x: hidden;
+
+  /* theme transition */
+  transition: background-color 0.6s ease, color 0.6s ease, background 0.6s ease;
+}
+
+/* 3) PAPER BACKGROUND + DOT/GRAIN */
+body {
+  background:
+    radial-gradient(1px 1px at 25% 25%, rgba(0, 0, 0, 0.04) 0, rgba(0, 0, 0, 0) 1px),
+    radial-gradient(1px 1px at 75% 75%, rgba(0, 0, 0, 0.035) 0, rgba(0, 0, 0, 0) 1px),
+    radial-gradient(1100px 520px at 10% 10%, rgba(122, 92, 255, 0.12), transparent 55%),
+    radial-gradient(900px 540px at 90% 90%, rgba(168, 240, 209, 0.12), transparent 55%),
+    radial-gradient(850px 520px at 80% 20%, rgba(255, 195, 160, 0.12), transparent 55%),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.45)),
+    var(--paper);
+  background-size: 6px 6px, 6px 6px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* dark bg */
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(1px 1px at 25% 25%, rgba(255, 255, 255, 0.05) 0, rgba(255, 255, 255, 0) 1px),
+    radial-gradient(1px 1px at 75% 75%, rgba(255, 255, 255, 0.045) 0, rgba(255, 255, 255, 0) 1px),
+    radial-gradient(1100px 520px at 10% 10%, rgba(122, 92, 255, 0.18), transparent 55%),
+    radial-gradient(900px 540px at 90% 90%, rgba(168, 240, 209, 0.10), transparent 55%),
+    radial-gradient(850px 520px at 80% 20%, rgba(255, 195, 160, 0.10), transparent 55%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+    var(--paper);
+}
+
+/* 4) BRUSH WIPE OVERLAY (너가 원하던 붓칠 느낌) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.6s ease, transform 0.6s ease, clip-path 0.6s ease;
+  z-index: 9999;
+  background:
+    radial-gradient(60% 60% at 50% 50%, rgba(255, 255, 255, 0.08), transparent 60%),
+    conic-gradient(from 180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.06) 60%, rgba(0, 0, 0, 0));
+  mix-blend-mode: overlay;
+  clip-path: circle(0% at 50% 50%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 9998;
+}
+
+/* 활성화 (ThemeToggle이 data-theme-anim 붙이는 방식 그대로) */
+:root[data-theme-anim="to-dark"] body::before,
+:root[data-theme-anim="to-light"] body::before {
+  opacity: 1;
+  transform: scale(1);
+  clip-path: circle(140% at 50% 50%);
+}
+:root[data-theme-anim="to-dark"] body::after {
+  background: #000;
+  opacity: 0.35;
+}
+:root[data-theme-anim="to-light"] body::after {
+  background: #fff;
+  opacity: 0.35;
+}
+
+/* motion reduce */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition: none !important;
+  }
+  body::before,
+  body::after {
+    transition: none !important;
+  }
+}
+
+/* 5) LINKS */
+a {
+  color: var(--ink);
+  text-decoration: none;
+}
+a:visited {
+  color: var(--ink);
+}
+
+/* 6) LAYOUT */
+.dm-page {
+  padding: 26px 16px 60px;
+}
+.dm-container {
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+.dm-muted {
+  opacity: 0.82;
+}
+
+/* 7) CARD / GLASS */
+.dm-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--stroke);
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+/* 8) BUTTONS */
+.ink-btn,
+.dm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  transition: transform 0.14s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ink-btn {
+  padding: 0.72rem 1rem;
+  background: var(--glass-strong);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+}
+:root[data-theme="dark"] .ink-btn {
+  box-shadow: none;
+}
+
+.dm-chip {
+  padding: 0.56rem 0.85rem;
+  background: rgba(255,255,255,0.28);
+}
+:root[data-theme="dark"] .dm-chip {
+  background: rgba(255,255,255,0.06);
+}
+
+.ink-btn:hover,
+.dm-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(122, 92, 255, 0.45);
+}
+.ink-btn:active,
+.dm-chip:active {
+  transform: translateY(0px);
+}
+
+/* 9) HEADER */
+.dm-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px) saturate(1.2);
+  background: rgba(247, 244, 239, 0.78);
+  border-bottom: 1px solid var(--stroke-soft);
+}
+:root[data-theme="dark"] .dm-header {
+  background: rgba(18, 18, 18, 0.65);
+}
+
+.dm-nav {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dm-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.dm-brand-emoji {
+  font-size: 26px;
+}
+.dm-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
+}
+.dm-title {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+.dm-subtitle {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.dm-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* tabs */
+.nav-links {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: var(--stroke-soft);
+}
+:root[data-theme="dark"] .nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.nav-link.is-active {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: var(--stroke);
+  position: relative;
+}
+:root[data-theme="dark"] .nav-link.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.nav-link.is-active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -6px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(122,92,255,0.85), rgba(168,240,209,0.75), transparent);
+  filter: blur(1px);
+  opacity: 0.95;
+}
+
+/* burger + mobile menu */
+.nav-burger {
+  display: none;
+  font-size: 22px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--ink);
+  padding: 8px 10px;
+  border-radius: 14px;
+}
+.nav-burger:hover {
+  background: rgba(255,255,255,0.45);
+  border-color: var(--stroke-soft);
+}
+:root[data-theme="dark"] .nav-burger:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+}
+
+.nav-mobile {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  left: 16px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--stroke);
+  background: rgba(247, 244, 239, 0.92);
+  backdrop-filter: blur(14px);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.28s ease;
+  z-index: 9999;
+}
+:root[data-theme="dark"] .nav-mobile {
+  background: rgba(18, 18, 18, 0.78);
+}
+.nav-mobile.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.nav-mobile-link {
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-weight: 900;
+}
+.nav-mobile-link:hover {
+  border-color: var(--stroke-soft);
+  background: rgba(255,255,255,0.50);
+}
+:root[data-theme="dark"] .nav-mobile-link:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+}
+.nav-mobile-sep {
+  height: 1px;
+  background: var(--stroke-soft);
+  margin: 4px 2px;
+}
+
+@media (max-width: 720px) {
+  .nav-links {
+    display: none;
+  }
+  .nav-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* 10) PAGE HEAD */
+.dm-section-head {
+  margin: 18px 0 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dm-section-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.3px;
+}
+.dm-page-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 11) FORMS */
+.dm-input {
+  width: 100%;
+  padding: 0.78rem 0.92rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.dm-input:focus {
+  border-color: rgba(122, 92, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(122, 92, 255, 0.14);
+  background: rgba(255, 255, 255, 0.75);
+}
+:root[data-theme="dark"] .dm-input {
+  background: rgba(255,255,255,0.06);
+}
+:root[data-theme="dark"] .dm-input:focus {
+  border-color: rgba(168,240,209,0.45);
+  box-shadow: 0 0 0 4px rgba(168,240,209,0.14);
+  background: rgba(255,255,255,0.08);
+}
+
+/* 12) FEED GRID (카드들) */
+.dm-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .dm-feed-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 13) TRACK CARD (네 피드/탐색/업로드 공통으로 쓰기 좋게) */
+.dm-track { padding: 16px; }
+.dm-track-head { display: flex; align-items: center; gap: 12px; }
+.dm-track-cover {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.35);
+}
+:root[data-theme="dark"] .dm-track-cover {
+  background: rgba(255,255,255,0.06);
+}
+.dm-track-meta { flex: 1; min-width: 0; }
+.dm-track-title { font-size: 16px; letter-spacing: -0.2px; }
+.dm-track-stats { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.dm-stat {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.25);
+}
+:root[data-theme="dark"] .dm-stat {
+  background: rgba(255,255,255,0.06);
+}
+.dm-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.dm-tag {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.22);
+  opacity: 0.95;
+}
+:root[data-theme="dark"] .dm-tag {
+  background: rgba(255,255,255,0.06);
+}
+
+/* 14) THEME TOGGLE BUTTON (이제 사이트 톤에 맞게) */
+.dm-theme-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--glass-strong);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform .35s ease, background .25s ease, border-color .25s ease;
+}
+.dm-theme-btn:hover {
+  transform: rotate(12deg) scale(1.03);
+  border-color: rgba(122,92,255,0.45);
+}
+.dm-theme-btn:active { transform: rotate(0deg) scale(1.0); }
+
+/* 15) AUTH PAGES (로그인/회원가입도 동일 톤) */
+.dm-auth-shell{
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 14px;
+}
+@media (max-width: 900px){ .dm-auth-shell{ grid-template-columns: 1fr; } }
+
+.dm-auth-left{
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--stroke);
+  padding: 26px 22px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 400px at 12% 10%, rgba(122,92,255,0.18), transparent 60%),
+    radial-gradient(900px 420px at 90% 90%, rgba(168,240,209,0.18), transparent 55%),
+    radial-gradient(800px 360px at 80% 20%, rgba(255,195,160,0.16), transparent 55%),
+    rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+:root[data-theme="dark"] .dm-auth-left{
+  background:
+    radial-gradient(900px 400px at 12% 10%, rgba(122,92,255,0.22), transparent 60%),
+    radial-gradient(900px 420px at 90% 90%, rgba(168,240,209,0.12), transparent 55%),
+    radial-gradient(800px 360px at 80% 20%, rgba(255,195,160,0.10), transparent 55%),
+    rgba(255,255,255,0.04);
+}
+
+.dm-auth-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.40);
+  font-weight: 900;
+}
+:root[data-theme="dark"] .dm-auth-badge{ background: rgba(255,255,255,0.06); }
+
+.dm-auth-badge-sub{ opacity: .7; font-weight: 800; }
+
+.dm-auth-left-title{
+  margin: 18px 0 6px;
+  font-size: 42px;
+  letter-spacing: -0.6px;
+}
+.dm-auth-left-hints{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.dm-auth-hint{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.30);
+  font-size: 13px;
+  font-weight: 900;
+}
+:root[data-theme="dark"] .dm-auth-hint{ background: rgba(255,255,255,0.06); }
+
+.dm-auth-mini{
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.35);
+  font-weight: 900;
+}
+:root[data-theme="dark"] .dm-auth-mini{ background: rgba(255,255,255,0.06); }
+
+.dm-auth-right { padding: 18px; }
+.dm-auth-title { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.4px; }
+.dm-auth-form { margin-top: 14px; display: grid; gap: 12px; }
+.dm-auth-label { display: grid; gap: 6px; font-weight: 900; }
+.dm-auth-input { composes: dm-input; } /* 참고용 (실제로는 아래를 씀) */
+.dm-auth-input { width: 100%; }
+.dm-auth-submit { width: 100%; justify-content: center; }
+
+.dm-auth-error{
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,0,0,0.18);
+  background: rgba(255,0,0,0.06);
+  font-weight: 900;
+}
+.dm-auth-footer{ margin-top: 14px; opacity: 0.88; }
+.dm-auth-link{ text-decoration: underline; font-weight: 900; }
+/* ===== Home Hero ===== */
+.dm-hero{
+  display:grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+@media (max-width: 900px){
+  .dm-hero{ grid-template-columns: 1fr; }
+}
+
+.dm-hero-card{ padding: 18px; }
+.dm-hero-top{
+  display:flex;
+  gap: 12px;
+  align-items:flex-start;
+}
+.dm-hero-emoji{ font-size: 34px; }
+.dm-hero-title{
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+}
+.dm-hero-points{
+  margin-top: 14px;
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 900px){
+  .dm-hero-points{ grid-template-columns: 1fr; }
+}
+.dm-point{
+  border-radius: 18px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.22);
+  padding: 12px;
+  display:grid;
+  gap: 6px;
+}
+:root[data-theme="dark"] .dm-point{
+  background: rgba(255,255,255,0.06);
+}
+
+.dm-hero-cta{
+  margin-top: 14px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dm-hero-side{
+  padding: 16px;
+}
+.dm-track-actions{
+  display:flex;
+  gap: 8px;
+  align-items:center;
+}
+
+.dm-icon-btn{
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.26);
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--ink);
+  transition: transform .14s ease, background .2s ease, border-color .2s ease;
+}
+.dm-icon-btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(122,92,255,0.45);
+  background: rgba(255,255,255,0.42);
+}
+:root[data-theme="dark"] .dm-icon-btn{
+  background: rgba(255,255,255,0.06);
+}
+
+.dm-mini{
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.18);
+}
+:root[data-theme="dark"] .dm-mini{
+  background: rgba(255,255,255,0.06);
+}
+
+.dm-meter{
+  margin-top: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.18);
+  overflow:hidden;
+}
+.dm-meter-bar{
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(122,92,255,0.75),
+    rgba(168,240,209,0.70),
+    rgba(255,195,160,0.70)
+  );
+}
+:root[data-theme="dark"] .dm-meter{
+  background: rgba(255,255,255,0.06);
+}

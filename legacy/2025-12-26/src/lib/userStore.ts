@@ -1,0 +1,65 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
+
+export type StoredUser = {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  createdAt: string;
+};
+
+const DATA_DIR = path.join(process.cwd(), "data");
+const USERS_FILE = path.join(DATA_DIR, "users.json");
+
+async function ensureStore() {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  try {
+    await fs.access(USERS_FILE);
+  } catch {
+    await fs.writeFile(USERS_FILE, "[]", "utf8");
+  }
+}
+
+export async function getUsers(): Promise<StoredUser[]> {
+  await ensureStore();
+  const raw = await fs.readFile(USERS_FILE, "utf8");
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as StoredUser[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function findUserByEmail(email: string) {
+  const users = await getUsers();
+  const e = email.trim().toLowerCase();
+  return users.find((u) => u.email.toLowerCase() === e) || null;
+}
+
+export async function createUser(input: {
+  name: string;
+  email: string;
+  passwordHash: string;
+}) {
+  const users = await getUsers();
+  const email = input.email.trim().toLowerCase();
+
+  if (users.some((u) => u.email.toLowerCase() === email)) {
+    throw new Error("EMAIL_EXISTS");
+  }
+
+  const newUser: StoredUser = {
+    id: crypto.randomUUID(),
+    name: input.name.trim() || "User",
+    email,
+    passwordHash: input.passwordHash,
+    createdAt: new Date().toISOString(),
+  };
+
+  users.unshift(newUser);
+  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2), "utf8");
+  return newUser;
+}

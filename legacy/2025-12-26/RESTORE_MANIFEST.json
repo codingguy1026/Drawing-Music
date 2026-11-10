@@ -1,0 +1,102 @@
+{
+  "title": "Drawing Music restored source snapshot",
+  "source_file": "conversations-007.json",
+  "conversation_title": "Drawing Music 부활 가능성",
+  "origin_dates": "2025-12-25 to 2025-12-26",
+  "files": [
+    {
+      "path": "src/app/components/AnalysisFeed.tsx",
+      "source_block_index": 226
+    },
+    {
+      "path": "src/app/components/TrackCard.tsx",
+      "source_block_index": 278
+    },
+    {
+      "path": "src/app/components/PageShell.tsx",
+      "source_block_index": 274
+    },
+    {
+      "path": "src/app/components/AuthShell.tsx",
+      "source_block_index": 244
+    },
+    {
+      "path": "src/app/components/Header.tsx",
+      "source_block_index": 260
+    },
+    {
+      "path": "src/app/components/ThemeToggle.tsx",
+      "source_block_index": 261
+    },
+    {
+      "path": "src/app/page.tsx",
+      "source_block_index": 262
+    },
+    {
+      "path": "src/app/feed/page.tsx",
+      "source_block_index": 252
+    },
+    {
+      "path": "src/app/explore/page.tsx",
+      "source_block_index": 253
+    },
+    {
+      "path": "src/app/upload/page.tsx",
+      "source_block_index": 254
+    },
+    {
+      "path": "src/app/collab/page.tsx",
+      "source_block_index": 255
+    },
+    {
+      "path": "src/app/me/page.tsx",
+      "source_block_index": 256
+    },
+    {
+      "path": "src/app/not-found.tsx",
+      "source_block_index": 257
+    },
+    {
+      "path": "src/app/login/page.tsx",
+      "source_block_index": 245
+    },
+    {
+      "path": "src/app/signup/page.tsx",
+      "source_block_index": 246
+    },
+    {
+      "path": "src/app/providers.tsx",
+      "source_block_index": 275
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "source_block_index": 276
+    },
+    {
+      "path": "src/auth.ts",
+      "source_block_index": 233
+    },
+    {
+      "path": "src/lib/userStore.ts",
+      "source_block_index": 235
+    },
+    {
+      "path": "src/app/api/signup/route.ts",
+      "source_block_index": 236
+    },
+    {
+      "path": "src/app/api/auth/[...nextauth]/route.ts",
+      "source_block_index": 234
+    }
+  ],
+  "css_source_blocks": [
+    259,
+    263,
+    279
+  ],
+  "restoration_fixes": [
+    "Header mobile outside-click behavior",
+    "Login Suspense for useSearchParams"
+  ],
+  "notes": "Source extracted from conversation JSON. New scaffolding files are not original source. Not production ready."
+}

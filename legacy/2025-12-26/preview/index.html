@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Drawing Music (2025 복원 미리보기)</title>
+<style>/* =========================================
+   Drawing Music — Global Design System
+   Dreamcore Paper + Glass + Ink UI
+   ========================================= */
+
+/* 1) TOKENS */
+:root {
+  --paper: #f7f4ef;
+  --ink: #1e1e1e;
+
+  --grape: #7a5cff;
+  --mint: #a8f0d1;
+  --peach: #ffc3a0;
+
+  --glass: rgba(255, 255, 255, 0.46);
+  --glass-strong: rgba(255, 255, 255, 0.62);
+  --stroke: rgba(0, 0, 0, 0.12);
+  --stroke-soft: rgba(0, 0, 0, 0.08);
+  --shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+
+  --container: 1040px;
+
+  --font-body: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+}
+
+/* DARK */
+:root[data-theme="dark"] {
+  --paper: #121212;
+  --ink: #f2f2f2;
+
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-strong: rgba(255, 255, 255, 0.10);
+  --stroke: rgba(255, 255, 255, 0.14);
+  --stroke-soft: rgba(255, 255, 255, 0.10);
+  --shadow: none;
+}
+
+/* 2) BASE RESET */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  overflow-x: hidden;
+
+  /* theme transition */
+  transition: background-color 0.6s ease, color 0.6s ease, background 0.6s ease;
+}
+
+/* 3) PAPER BACKGROUND + DOT/GRAIN */
+body {
+  background:
+    radial-gradient(1px 1px at 25% 25%, rgba(0, 0, 0, 0.04) 0, rgba(0, 0, 0, 0) 1px),
+    radial-gradient(1px 1px at 75% 75%, rgba(0, 0, 0, 0.035) 0, rgba(0, 0, 0, 0) 1px),
+    radial-gradient(1100px 520px at 10% 10%, rgba(122, 92, 255, 0.12), transparent 55%),
+    radial-gradient(900px 540px at 90% 90%, rgba(168, 240, 209, 0.12), transparent 55%),
+    radial-gradient(850px 520px at 80% 20%, rgba(255, 195, 160, 0.12), transparent 55%),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.45)),
+    var(--paper);
+  background-size: 6px 6px, 6px 6px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* dark bg */
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(1px 1px at 25% 25%, rgba(255, 255, 255, 0.05) 0, rgba(255, 255, 255, 0) 1px),
+    radial-gradient(1px 1px at 75% 75%, rgba(255, 255, 255, 0.045) 0, rgba(255, 255, 255, 0) 1px),
+    radial-gradient(1100px 520px at 10% 10%, rgba(122, 92, 255, 0.18), transparent 55%),
+    radial-gradient(900px 540px at 90% 90%, rgba(168, 240, 209, 0.10), transparent 55%),
+    radial-gradient(850px 520px at 80% 20%, rgba(255, 195, 160, 0.10), transparent 55%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+    var(--paper);
+}
+
+/* 4) BRUSH WIPE OVERLAY (너가 원하던 붓칠 느낌) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.6s ease, transform 0.6s ease, clip-path 0.6s ease;
+  z-index: 9999;
+  background:
+    radial-gradient(60% 60% at 50% 50%, rgba(255, 255, 255, 0.08), transparent 60%),
+    conic-gradient(from 180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.06) 60%, rgba(0, 0, 0, 0));
+  mix-blend-mode: overlay;
+  clip-path: circle(0% at 50% 50%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 9998;
+}
+
+/* 활성화 (ThemeToggle이 data-theme-anim 붙이는 방식 그대로) */
+:root[data-theme-anim="to-dark"] body::before,
+:root[data-theme-anim="to-light"] body::before {
+  opacity: 1;
+  transform: scale(1);
+  clip-path: circle(140% at 50% 50%);
+}
+:root[data-theme-anim="to-dark"] body::after {
+  background: #000;
+  opacity: 0.35;
+}
+:root[data-theme-anim="to-light"] body::after {
+  background: #fff;
+  opacity: 0.35;
+}
+
+/* motion reduce */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition: none !important;
+  }
+  body::before,
+  body::after {
+    transition: none !important;
+  }
+}
+
+/* 5) LINKS */
+a {
+  color: var(--ink);
+  text-decoration: none;
+}
+a:visited {
+  color: var(--ink);
+}
+
+/* 6) LAYOUT */
+.dm-page {
+  padding: 26px 16px 60px;
+}
+.dm-container {
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+.dm-muted {
+  opacity: 0.82;
+}
+
+/* 7) CARD / GLASS */
+.dm-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--stroke);
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+/* 8) BUTTONS */
+.ink-btn,
+.dm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  transition: transform 0.14s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ink-btn {
+  padding: 0.72rem 1rem;
+  background: var(--glass-strong);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+}
+:root[data-theme="dark"] .ink-btn {
+  box-shadow: none;
+}
+
+.dm-chip {
+  padding: 0.56rem 0.85rem;
+  background: rgba(255,255,255,0.28);
+}
+:root[data-theme="dark"] .dm-chip {
+  background: rgba(255,255,255,0.06);
+}
+
+.ink-btn:hover,
+.dm-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(122, 92, 255, 0.45);
+}
+.ink-btn:active,
+.dm-chip:active {
+  transform: translateY(0px);
+}
+
+/* 9) HEADER */
+.dm-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px) saturate(1.2);
+  background: rgba(247, 244, 239, 0.78);
+  border-bottom: 1px solid var(--stroke-soft);
+}
+:root[data-theme="dark"] .dm-header {
+  background: rgba(18, 18, 18, 0.65);
+}
+
+.dm-nav {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dm-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.dm-brand-emoji {
+  font-size: 26px;
+}
+.dm-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
+}
+.dm-title {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+.dm-subtitle {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.dm-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* tabs */
+.nav-links {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: var(--stroke-soft);
+}
+:root[data-theme="dark"] .nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.nav-link.is-active {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: var(--stroke);
+  position: relative;
+}
+:root[data-theme="dark"] .nav-link.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.nav-link.is-active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -6px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(122,92,255,0.85), rgba(168,240,209,0.75), transparent);
+  filter: blur(1px);
+  opacity: 0.95;
+}
+
+/* burger + mobile menu */
+.nav-burger {
+  display: none;
+  font-size: 22px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--ink);
+  padding: 8px 10px;
+  border-radius: 14px;
+}
+.nav-burger:hover {
+  background: rgba(255,255,255,0.45);
+  border-color: var(--stroke-soft);
+}
+:root[data-theme="dark"] .nav-burger:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+}
+
+.nav-mobile {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  left: 16px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--stroke);
+  background: rgba(247, 244, 239, 0.92);
+  backdrop-filter: blur(14px);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.28s ease;
+  z-index: 9999;
+}
+:root[data-theme="dark"] .nav-mobile {
+  background: rgba(18, 18, 18, 0.78);
+}
+.nav-mobile.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.nav-mobile-link {
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-weight: 900;
+}
+.nav-mobile-link:hover {
+  border-color: var(--stroke-soft);
+  background: rgba(255,255,255,0.50);
+}
+:root[data-theme="dark"] .nav-mobile-link:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+}
+.nav-mobile-sep {
+  height: 1px;
+  background: var(--stroke-soft);
+  margin: 4px 2px;
+}
+
+@media (max-width: 720px) {
+  .nav-links {
+    display: none;
+  }
+  .nav-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* 10) PAGE HEAD */
+.dm-section-head {
+  margin: 18px 0 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dm-section-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.3px;
+}
+.dm-page-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 11) FORMS */
+.dm-input {
+  width: 100%;
+  padding: 0.78rem 0.92rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.dm-input:focus {
+  border-color: rgba(122, 92, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(122, 92, 255, 0.14);
+  background: rgba(255, 255, 255, 0.75);
+}
+:root[data-theme="dark"] .dm-input {
+  background: rgba(255,255,255,0.06);
+}
+:root[data-theme="dark"] .dm-input:focus {
+  border-color: rgba(168,240,209,0.45);
+  box-shadow: 0 0 0 4px rgba(168,240,209,0.14);
+  background: rgba(255,255,255,0.08);
+}
+
+/* 12) FEED GRID (카드들) */
+.dm-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .dm-feed-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 13) TRACK CARD (네 피드/탐색/업로드 공통으로 쓰기 좋게) */
+.dm-track { padding: 16px; }
+.dm-track-head { display: flex; align-items: center; gap: 12px; }
+.dm-track-cover {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.35);
+}
+:root[data-theme="dark"] .dm-track-cover {
+  background: rgba(255,255,255,0.06);
+}
+.dm-track-meta { flex: 1; min-width: 0; }
+.dm-track-title { font-size: 16px; letter-spacing: -0.2px; }
+.dm-track-stats { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.dm-stat {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.25);
+}
+:root[data-theme="dark"] .dm-stat {
+  background: rgba(255,255,255,0.06);
+}
+.dm-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.dm-tag {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.22);
+  opacity: 0.95;
+}
+:root[data-theme="dark"] .dm-tag {
+  background: rgba(255,255,255,0.06);
+}
+
+/* 14) THEME TOGGLE BUTTON (이제 사이트 톤에 맞게) */
+.dm-theme-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--glass-strong);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform .35s ease, background .25s ease, border-color .25s ease;
+}
+.dm-theme-btn:hover {
+  transform: rotate(12deg) scale(1.03);
+  border-color: rgba(122,92,255,0.45);
+}
+.dm-theme-btn:active { transform: rotate(0deg) scale(1.0); }
+
+/* 15) AUTH PAGES (로그인/회원가입도 동일 톤) */
+.dm-auth-shell{
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 14px;
+}
+@media (max-width: 900px){ .dm-auth-shell{ grid-template-columns: 1fr; } }
+
+.dm-auth-left{
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--stroke);
+  padding: 26px 22px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 400px at 12% 10%, rgba(122,92,255,0.18), transparent 60%),
+    radial-gradient(900px 420px at 90% 90%, rgba(168,240,209,0.18), transparent 55%),
+    radial-gradient(800px 360px at 80% 20%, rgba(255,195,160,0.16), transparent 55%),
+    rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+:root[data-theme="dark"] .dm-auth-left{
+  background:
+    radial-gradient(900px 400px at 12% 10%, rgba(122,92,255,0.22), transparent 60%),
+    radial-gradient(900px 420px at 90% 90%, rgba(168,240,209,0.12), transparent 55%),
+    radial-gradient(800px 360px at 80% 20%, rgba(255,195,160,0.10), transparent 55%),
+    rgba(255,255,255,0.04);
+}
+
+.dm-auth-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.40);
+  font-weight: 900;
+}
+:root[data-theme="dark"] .dm-auth-badge{ background: rgba(255,255,255,0.06); }
+
+.dm-auth-badge-sub{ opacity: .7; font-weight: 800; }
+
+.dm-auth-left-title{
+  margin: 18px 0 6px;
+  font-size: 42px;
+  letter-spacing: -0.6px;
+}
+.dm-auth-left-hints{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.dm-auth-hint{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.30);
+  font-size: 13px;
+  font-weight: 900;
+}
+:root[data-theme="dark"] .dm-auth-hint{ background: rgba(255,255,255,0.06); }
+
+.dm-auth-mini{
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.35);
+  font-weight: 900;
+}
+:root[data-theme="dark"] .dm-auth-mini{ background: rgba(255,255,255,0.06); }
+
+.dm-auth-right { padding: 18px; }
+.dm-auth-title { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.4px; }
+.dm-auth-form { margin-top: 14px; display: grid; gap: 12px; }
+.dm-auth-label { display: grid; gap: 6px; font-weight: 900; }
+.dm-auth-input { composes: dm-input; } /* 참고용 (실제로는 아래를 씀) */
+.dm-auth-input { width: 100%; }
+.dm-auth-submit { width: 100%; justify-content: center; }
+
+.dm-auth-error{
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,0,0,0.18);
+  background: rgba(255,0,0,0.06);
+  font-weight: 900;
+}
+.dm-auth-footer{ margin-top: 14px; opacity: 0.88; }
+.dm-auth-link{ text-decoration: underline; font-weight: 900; }
+
+/* ===== Home Hero ===== */
+.dm-hero{
+  display:grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+@media (max-width: 900px){
+  .dm-hero{ grid-template-columns: 1fr; }
+}
+
+.dm-hero-card{ padding: 18px; }
+.dm-hero-top{
+  display:flex;
+  gap: 12px;
+  align-items:flex-start;
+}
+.dm-hero-emoji{ font-size: 34px; }
+.dm-hero-title{
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+}
+.dm-hero-points{
+  margin-top: 14px;
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 900px){
+  .dm-hero-points{ grid-template-columns: 1fr; }
+}
+.dm-point{
+  border-radius: 18px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.22);
+  padding: 12px;
+  display:grid;
+  gap: 6px;
+}
+:root[data-theme="dark"] .dm-point{
+  background: rgba(255,255,255,0.06);
+}
+
+.dm-hero-cta{
+  margin-top: 14px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dm-hero-side{
+  padding: 16px;
+}
+
+.dm-track-actions{
+  display:flex;
+  gap: 8px;
+  align-items:center;
+}
+
+.dm-icon-btn{
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.26);
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--ink);
+  transition: transform .14s ease, background .2s ease, border-color .2s ease;
+}
+.dm-icon-btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(122,92,255,0.45);
+  background: rgba(255,255,255,0.42);
+}
+:root[data-theme="dark"] .dm-icon-btn{
+  background: rgba(255,255,255,0.06);
+}
+
+.dm-mini{
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.18);
+}
+:root[data-theme="dark"] .dm-mini{
+  background: rgba(255,255,255,0.06);
+}
+
+.dm-meter{
+  margin-top: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke-soft);
+  background: rgba(255,255,255,0.18);
+  overflow:hidden;
+}
+.dm-meter-bar{
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(122,92,255,0.75),
+    rgba(168,240,209,0.70),
+    rgba(255,195,160,0.70)
+  );
+}
+:root[data-theme="dark"] .dm-meter{
+  background: rgba(255,255,255,0.06);
+}
+
+
+/* Read-only reconstruction demo styling; original CSS above */
+.preview-ribbon{font-size:12px; font-weight:800; display:inline-flex; gap:7px; align-items:center; padding:6px 12px; background:rgba(122,92,255,.11); border:1px solid rgba(122,92,255,.25); border-radius:100px; margin-bottom:8px}
+.preview-footer{max-width:1040px;margin:10px auto 50px; padding:0 16px; font-size:12px; opacity:.65; text-align:center}
+.preview-hidden{display:none!important}.preview-tab:hover{cursor:pointer}.preview-form-area{max-width:520px; margin:20px auto}.preview-title{font-size:30px;font-weight:900;margin:14px 0 0}.preview-cover{display:grid;place-items:center;font-size:42px;width:70px;height:70px;border-radius:22px;background:linear-gradient(135deg,rgba(122,92,255,.22),rgba(255,195,160,.45))}
+.preview-stat{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.preview-stat>span{padding:6px 10px;border:1px solid var(--stroke-soft);border-radius:20px;font-size:12px}
+.preview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.preview-track{min-width:0}.preview-track-head{display:flex;gap:14px;align-items:center}.preview-track h3{margin:0}.preview-track p{margin:4px 0}.preview-track-note{font-size:13px;line-height:1.65;margin-top:12px;opacity:.86}.preview-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.preview-btn{font:inherit;color:inherit}
+.preview-uploader{border:2px dashed var(--stroke);border-radius:18px;padding:24px;text-align:center;min-height:126px;cursor:pointer}.preview-uploader input{max-width:95%}.preview-sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}.preview-notice{position:fixed;right:24px;bottom:24px;z-index:99;background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:16px;box-shadow:0 5px 40px #0002;font-size:14px;max-width:360px;display:none}.preview-notice.show{display:block}.preview-toolbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.preview-feature{background:linear-gradient(135deg,rgba(122,92,255,.12),rgba(255,195,160,.23));border-radius:20px;padding:22px;margin-top:16px}.preview-login-link{font-size:13px}.preview-brand{cursor:pointer}.preview-search{max-width:360px}
+@media(max-width:800px){.preview-grid{grid-template-columns:1fr}.preview-sectionhead{flex-direction:column;align-items:stretch}.preview-toolbar{justify-content:flex-start}.preview-header nav.nav-links{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}.preview-header .dm-nav{flex-wrap:wrap}.preview-header .dm-brand{flex:1}.preview-header .nav-link{padding:7px 9px;font-size:12px}}
+@media(max-width:500px){.preview-header nav.nav-links{order:3;width:100%}.preview-brand .dm-subtitle{display:none}.preview-title{font-size:24px}}
+</style></head>
+<body>
+<header class="dm-header preview-header">
+  <div class="dm-nav">
+    <a href="#/" class="dm-brand preview-brand" aria-label="Drawing Music Home"><span class="dm-brand-emoji">🎨</span><span class="dm-brand-text"><b class="dm-title">Drawing Music</b><small class="dm-muted dm-subtitle">Drawing Music, Drawing Connections</small></span></a>
+    <nav class="nav-links" aria-label="메인 메뉴">
+      <a class="nav-link preview-tab" href="#/" data-path="/">Home</a>
+      <a class="nav-link preview-tab" href="#/feed" data-path="/feed">Feed</a>
+      <a class="nav-link preview-tab" href="#/explore" data-path="/explore">Explore</a>
+      <a class="nav-link preview-tab" href="#/upload" data-path="/upload">Upload</a>
+      <a class="nav-link preview-tab" href="#/collab" data-path="/collab">Collab</a>
+    </nav>
+    <div class="preview-toolbar"><button id="themeBtn" type="button" class="dm-theme-btn" title="테마 변경" aria-label="테마 변경">🌙</button><a href="#/login" class="dm-chip preview-login-link">Log in</a></div>
+  </div>
+</header>
+<main class="dm-page" id="app" aria-live="polite"></main>
+<div class="preview-footer">🗃️ 2025.12.26 JSON 코드로 복원한 Drawing Music UI 미리보기 · 추천은 로컬 데모 · 실제 음원/계정/서버 업로드 없음</div>
+<div id="notice" class="preview-notice" role="status"></div>
+<script>
+const TRACKS = [
+{id:'t1',title:'Paper Sky',artist:'Luna Draft',cover:'☁️',bpm:92,key:'C major',energy:.38,dance:.42,valence:.62,tags:['Lo-fi','따뜻','공부용','잔잔']},
+{id:'t2',title:'Neon Alley',artist:'Grape Runner',cover:'🟣',bpm:128,key:'F minor',energy:.82,dance:.78,valence:.46,tags:['EDM','드라이브','밤','펀치']},
+{id:'t3',title:'Mint Steps',artist:'Aqua Sketch',cover:'🌿',bpm:110,key:'D major',energy:.55,dance:.66,valence:.72,tags:['Pop','상큼','산책','리듬']},
+{id:'t4',title:'Inkstorm',artist:'Black Brush',cover:'🖤',bpm:140,key:'E minor',energy:.92,dance:.62,valence:.30,tags:['Rock','폭발','드럼','집중']},
+{id:'t5',title:'Peach Sunset',artist:'Soft Palette',cover:'🍑',bpm:100,key:'A major',energy:.46,dance:.58,valence:.84,tags:['Acoustic','감성','노을','포근']},
+{id:'t6',title:'Circuit Bloom',artist:'Synth Garden',cover:'🌸',bpm:124,key:'G minor',energy:.74,dance:.81,valence:.55,tags:['Synthwave','레트로','빛','질주']},
+{id:'t7',title:'Quiet Museum',artist:'Gray Canvas',cover:'🏛️',bpm:78,key:'B♭ major',energy:.22,dance:.28,valence:.58,tags:['Piano','고요','전시','힐링']},
+{id:'t8',title:'Collab Spark',artist:'Roommates',cover:'⚡',bpm:115,key:'E major',energy:.64,dance:.72,valence:.66,tags:['Indie','합주','청량','기분업']}
+];
+const el = document.getElementById('app'); let search='';let lastProfile=null;
+let profile={bpm:110,energy:.55,dance:.6,valence:.62};
+try {const p=JSON.parse(localStorage.getItem('dm_vibe_profile_v1'));if(p&&[p.bpm,p.energy,p.danceability,p.valence].every(Number.isFinite))profile={bpm:p.bpm,energy:p.energy,dance:p.danceability,valence:p.valence};}catch(e){}
+function safe(s){return String(s).replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));}
+function clamp(n){return Math.max(0,Math.min(1,n));}
+function score(t){const bpm=n=>clamp((n-60)/100);const dist=Math.abs(bpm(t.bpm)-bpm(profile.bpm))*.25+Math.abs(t.energy-profile.energy)*.25+Math.abs(t.dance-profile.dance)*.30+Math.abs(t.valence-profile.valence)*.20;return Math.round(clamp(1-dist)*100);}
+function saveProfile(){try{localStorage.setItem('dm_vibe_profile_v1',JSON.stringify({bpm:profile.bpm,energy:profile.energy,danceability:profile.dance,valence:profile.valence}));}catch(e){}}
+function notice(t){const n=document.getElementById('notice');n.textContent=t;n.classList.add('show');clearTimeout(window.__noticeTimer);window.__noticeTimer=setTimeout(()=>n.classList.remove('show'),3500);}
+function nav(){const p=decodeURIComponent(location.hash.slice(1))||'/';document.querySelectorAll('[data-path]').forEach(n=>n.classList.toggle('is-active',n.getAttribute('data-path')===p));return p;}
+function shell(title,subtitle,content,right=''){return `<div class="dm-container"><div class="preview-ribbon">🗃️ 2025 ORIGINAL UI RECONSTRUCTION</div><div class="preview-sectionhead"><div><h1 class="preview-title">${title}</h1><p class="dm-muted">${subtitle}</p></div><div class="preview-toolbar">${right}</div></div>${content}</div>`;}
+function trackCard(t,showActions=true){return `<article class="dm-card preview-track"><div class="preview-track-head"><div class="preview-cover" aria-hidden="true">${t.cover}</div><div><h3>${safe(t.title)}</h3><p class="dm-muted">${safe(t.artist)}</p></div></div><div class="preview-stat"><span>🎛️ ${t.bpm} BPM</span><span>🎼 ${safe(t.key)}</span><span>✨ ${score(t)}% match</span></div><p class="dm-muted preview-track-note">${t.tags.map(s=>'#'+safe(s)).join('  ')}<br>분석 데모: ${t.energy>=.7?'에너지 높은 곡':t.energy<=.4?'차분한 곡':'균형 잡힌 곡'}이에요.</p>${showActions?`<div class="preview-controls"><button class="ink-btn preview-btn" data-like="${t.id}">♥ 좋아요</button><button class="dm-chip preview-btn" data-skip="${t.id}">관심 없음</button><button class="dm-chip preview-btn" data-preview="${t.id}">▶ 듣기</button></div>`:''}</article>`;}
+function home(){return shell('🎨 Drawing Music','음악을 그리고, 음악으로 연결된다.',`<section class="dm-hero"><div class="dm-card dm-hero-card"><div class="dm-hero-top"><span class="dm-hero-emoji">🖌️</span><div><h2 class="dm-hero-title">그리는 음악, 보이는 추천</h2><p class="dm-muted">“좋은 곡”만 던지는 게 아니라, <b>왜 좋은지</b>까지 말해주는 피드.</p></div></div><div class="dm-hero-points"><div class="dm-point"><b>🧠 분석</b><span class="dm-muted">BPM / 키 / 에너지 / 분위기</span></div><div class="dm-point"><b>✨ 추천</b><span class="dm-muted">오늘의 무드에 맞춘 큐레이션</span></div><div class="dm-point"><b>🤝 연결</b><span class="dm-muted">다른 창작자와 콜라보</span></div></div><div class="dm-hero-cta"><a href="#/feed" class="ink-btn">🎧 Go to Feed</a><a href="#/explore" class="dm-chip">🔎 Explore</a></div></div><div class="dm-card dm-hero-side"><b>🗓️ Today’s Vibe</b><p class="dm-muted">“차분 + 약간 네온” 확률 높음 😏</p><div class="dm-progress"><div class="dm-progress-bar" style="width:68%"></div></div><p class="dm-muted">Match 68% · 예시 수치</p><div class="preview-stat"><span>#study</span><span>#night</span><span>#soft</span></div></div></section><h2 class="dm-h2">👀 Feed Preview (맛보기)</h2><div class="preview-grid">${['t5','t4','t2'].map(id=>trackCard(TRACKS.find(t=>t.id===id),false)).join('')}</div>`,`<a class="ink-btn" href="#/feed">🎧 Go to Feed</a><a class="dm-chip" href="#/upload">⬆️ Upload</a>`);}
+function feed(){return shell('🎧 Feed','알고리즘이 분석한 추천 + 이유까지 설명해주는 곳',`<div class="dm-card" style="margin-bottom:16px"><b>🧠 취향 프로필 (이 브라우저에만 저장)</b><div class="preview-stat"><span>BPM ${Math.round(profile.bpm)}</span><span>에너지 ${Math.round(profile.energy*100)}%</span><span>댄스 ${Math.round(profile.dance*100)}%</span><span>밝기 ${Math.round(profile.valence*100)}%</span></div><div class="preview-controls"><button id="resetProfile" class="dm-chip">취향 초기화</button><button id="undoProfile" class="dm-chip" ${lastProfile?'':'disabled'}>실행 취소</button></div></div><div class="preview-grid">${[...TRACKS].sort((a,b)=>score(b)-score(a)).map(t=>trackCard(t)).join('')}</div>`,`<span class="dm-pill">🧠 Smart Demo</span>`);}
+function explore(){const matches=TRACKS.filter(t=>(t.title+' '+t.artist+' '+t.tags.join(' ')).toLowerCase().includes(search.toLowerCase()));return shell('🔎 Explore','새로운 트랙과 분위기를 탐색해봐',`<label class="dm-label">트랙 검색<input id="trackSearch" class="dm-input preview-search" type="search" value="${safe(search)}" placeholder="제목, 아티스트, 태그…" autocomplete="off"></label><div class="preview-grid" id="searchResults">${matches.map(t=>trackCard(t,false)).join('')||'<div class="dm-card">검색 결과가 없어!</div>'}</div>`,`<span class="dm-pill">🌸 ${matches.length} tracks</span>`);}
+function upload(){return shell('⬆️ Upload','음악을 올리고, 분석을 시작하자',`<div class="dm-card"><b>🎶 Upload a Track</b><p class="dm-muted">당시 원본도 업로드 화면만 있었고 서버 저장은 미구현 상태였어. 여기선 파일명 확인까지만 가능해.</p><div class="preview-uploader"><p style="font-size:28px">🗂️</p><label for="previewFile"><b>Choose file</b><p class="dm-muted">MP3 / WAV 파일을 선택해봐</p></label><input id="previewFile" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></div><div class="preview-grid" style="margin-top:18px"><label class="dm-label">Title<input class="dm-input" id="upTitle" placeholder="Track title"></label><label class="dm-label">Artist<input class="dm-input" id="upArtist" placeholder="Artist name"></label></div><div class="preview-controls"><button id="uploadDemo" class="ink-btn">Upload (UI 데모)</button><button id="analyzeDemo" class="dm-chip">Analyze (UI 데모)</button></div><p id="uploadMsg" class="dm-muted"></p></div>`,`<span class="dm-pill">🎛️ Analyzer</span>`);}
+function collab(){return shell('🤝 Collab','사람들이랑 같이 만들고, 같이 듣고, 같이 성장',`<div class="preview-grid">${[{n:'Lo-fi Study Room',m:12,v:'☁️ 포근'},{n:'Rock Band Garage',m:8,v:'🖤 폭발'},{n:'Synth Night Drive',m:15,v:'🟣 네온'}].map(r=>`<article class="dm-card"><h2>${r.n}</h2><p class="dm-muted">${r.m} members · ${r.v}</p><button class="dm-chip" data-collab="${r.n}">Join room</button></article>`).join('')}</div>`,`<button id="newRoom" class="dm-chip">+ New Room</button>`);}
+function login(){return shell('🔑 Login','Drawing Music 계정 화면 복원',`<div class="dm-card preview-form-area"><h2>Welcome back 🎧</h2><p class="dm-muted">정적 미리보기에는 실제 로그인 서버가 연결되지 않아.</p><label class="dm-label">Email<input class="dm-input" type="email" placeholder="you@example.com"></label><label class="dm-label">Password<input class="dm-input" type="password" placeholder="비밀번호"></label><div class="preview-controls"><button class="ink-btn" id="loginDemo">Login (UI 데모)</button><a class="dm-chip" href="#/signup">Sign up →</a></div></div>`);}
+function signup(){return shell('✨ Sign up','새 계정 만들기 화면 복원',`<div class="dm-card preview-form-area"><p class="dm-muted">실제 계정은 생성되지 않아.</p><label class="dm-label">Name<input class="dm-input" placeholder="닉네임"></label><label class="dm-label">Email<input class="dm-input" type="email" placeholder="you@example.com"></label><label class="dm-label">Password<input class="dm-input" type="password" placeholder="비밀번호"></label><button class="ink-btn" id="signupDemo" style="margin-top:15px">Sign up (UI 데모)</button></div>`);}
+function render(){let path=nav();el.innerHTML=path==='/'?home():path==='/feed'?feed():path==='/explore'?explore():path==='/upload'?upload():path==='/collab'?collab():path==='/login'?login():path==='/signup'?signup():shell('404','페이지를 찾을 수 없어요',`<a href="#/" class="ink-btn">홈으로</a>`);}
+window.addEventListener('hashchange',()=>{render();window.scrollTo(0,0);});
+document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;
+if(btn.dataset.like||btn.dataset.skip){const t=TRACKS.find(t=>t.id===(btn.dataset.like||btn.dataset.skip));const alpha=btn.dataset.like ? .15 : .10;const direction=btn.dataset.skip?-1:1;lastProfile={...profile};profile={bpm:Math.max(60,Math.min(160,profile.bpm+direction*alpha*(t.bpm-profile.bpm))),energy:clamp(profile.energy+direction*alpha*(t.energy-profile.energy)),dance:clamp(profile.dance+direction*alpha*(t.dance-profile.dance)),valence:clamp(profile.valence+direction*alpha*(t.valence-profile.valence))};saveProfile();render();notice(btn.dataset.like?`♥ ${t.title}로 취향을 업데이트했어`:`${t.title} 선호도를 낮췄어`);}
+if(btn.id==='resetProfile'){lastProfile={...profile};profile={bpm:110,energy:.55,dance:.6,valence:.62};saveProfile();render();notice('취향 초기화 완료');}
+if(btn.id==='undoProfile'&&lastProfile){profile=lastProfile;lastProfile=null;saveProfile();render();notice('이전 취향 복원 완료');}
+if(btn.dataset.preview)notice('원본에도 음원 파일은 없어. ▶ 버튼은 UI 데모야.');
+if(btn.dataset.collab||btn.id==='newRoom')notice('콜라보 방은 당시 UI 데모였어. 실시간 채팅은 미구현!');
+if(btn.id==='loginDemo'||btn.id==='signupDemo')notice('미리보기에서는 계정 정보를 전송하거나 저장하지 않아.');
+if(btn.id==='uploadDemo'||btn.id==='analyzeDemo'){const f=document.getElementById('previewFile')?.files?.[0];const msg=document.getElementById('uploadMsg');msg.textContent=f?`${f.name} (${Math.round(f.size/1024)}KB) 로컬 파일 선택됨. 실제 전송/분석은 안 돼.`:'먼저 음악 파일을 선택해줘.';}
+});
+document.addEventListener('input',e=>{if(e.target.id==='trackSearch'){search=e.target.value;const matches=TRACKS.filter(t=>(t.title+' '+t.artist+' '+t.tags.join(' ')).toLowerCase().includes(search.toLowerCase()));const result=document.getElementById('searchResults');if(result)result.innerHTML=matches.map(t=>trackCard(t,false)).join('')||'<div class="dm-card">검색 결과가 없어!</div>';}});
+const themeBtn=document.getElementById('themeBtn');function setTheme(t){document.documentElement.dataset.theme=t;themeBtn.textContent=t==='dark'?'☀️':'🌙';try{localStorage.setItem('dm_theme',t);}catch(e){}}setTheme((()=>{try{return localStorage.getItem('dm_theme')==='dark'?'dark':'light';}catch(e){return 'light';}})());themeBtn.onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');render();
+</script></body></html>
