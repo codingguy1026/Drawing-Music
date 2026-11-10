@@ -69,3 +69,5 @@ The 2025 recommendation experiment is now adapted to the 2026 Classic home page.
 - Player, playlists, searches, local storage, theme and Drawing ID integration are untouched. The archived 2025 code remains under [`legacy/2025-12-26/`](legacy/2025-12-26/).
 
 No third-party music is added. This remains a local demo prototype.
+
+> Build note: the standalone archived 2025 project has its own dependencies and tsconfig. The root TypeScript project excludes `legacy/` so archived auth experiments never affect the current app's production build.
