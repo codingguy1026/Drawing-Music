@@ -1,0 +1,24 @@
+/* Liner-inspired independent enhancements: original captions and discovery */
+.np-lyrics{min-height:210px;max-height:48vh;overflow:auto;padding:18px 15px;min-width:0}
+.np-lyrics[hidden]{display:none}
+.np-lyrics-disclaimer,.np-lyrics-empty{font-size:12px;line-height:1.65;color:#b7c2cb;margin:0 0 18px}
+.np-lyric-lines{padding:0;margin:0;list-style:none;display:grid;gap:9px}
+.np-lyric{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:14px 12px;border-radius:11px;width:100%;font-size:14px;line-height:1.6;color:#c0cbcd;overflow-wrap:anywhere}
+.np-lyric time{font-size:11px;white-space:nowrap;color:#a2b0b4;padding-top:3px;font-variant-numeric:tabular-nums}
+.np-lyric.active{background:rgba(var(--np-glow-rgb, 181,204,160),.18);color:#fff;font-weight:700;outline:1px solid rgba(var(--np-glow-rgb, 181,204,160),.45)}
+.np-lyric:hover{background:rgba(255,255,255,.09)}
+.np-tabs{display:flex;flex-wrap:wrap;gap:5px}
+.np-tabs button{flex:1 1 auto;min-width:0;white-space:nowrap;padding-inline:8px}
+.classic-search-clear{font-size:12px;border-radius:9px;padding:8px 12px;background:rgba(115,82,157,.12);white-space:nowrap}
+.classic-search-clear:hover{background:rgba(115,82,157,.23)}
+.classic-discovery-empty{display:grid;justify-items:start;gap:10px;padding:25px 16px}
+.classic-discovery-empty p{margin:0}
+.classic-discovery-empty button{border:1px solid currentColor;border-radius:9px;padding:10px 14px;font-weight:650}
+.classic-panel .classic-mini.filtered{min-height:36px}
+.dm-filter-input{width:100%;min-width:0;border:1px solid rgba(127,127,127,.25);padding:10px 12px;border-radius:9px;background:transparent;color:inherit;margin:12px 0}
+.dm-feedback{font-size:12px;line-height:1.6}
+.dm-loading{padding:25px;line-height:1.7}
+@media(max-width:720px){
+ .np-lyrics{max-height:none;min-height:160px}
+ .np-tabs button{font-size:11px;padding:11px 6px}
+}
