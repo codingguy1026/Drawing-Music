@@ -113,6 +113,15 @@ export class DemoAudioEngine {
     this.haltVoices();
   }
 
+  /** Select a demo track without creating or resuming an audio context. */
+  select(track:DemoTrack,position=0):void {
+    ++this.command;
+    this.haltVoices();
+    this.playing=false;
+    this.track=track;
+    this.offset=Math.min(track.duration,Math.max(0,position));
+  }
+
   async resume(): Promise<void> {
     if (this.track) await this.play(this.track, this.offset);
   }
