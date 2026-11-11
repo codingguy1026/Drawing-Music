@@ -7,6 +7,7 @@ type Props={playlists:PortablePlaylist[];knownTrackIds:string[];onImport:(items:
 const MAX_FILE_BYTES=1024*1024;
 const MAX_PLAYLISTS=100;
 const MAX_TRACKS=5000;
+const signature=(p:PortablePlaylist)=>JSON.stringify([p.name.trim().toLocaleLowerCase(),[...new Set(p.trackIds)].sort()]);
 
 export default function PlaylistTransfer({playlists,knownTrackIds,onImport}:Props){
  const input=useRef<HTMLInputElement>(null);
@@ -31,16 +32,25 @@ export default function PlaylistTransfer({playlists,knownTrackIds,onImport}:Prop
    if(data.playlists.length>MAX_PLAYLISTS)throw new Error("한 번에 최대 100개까지 가져올 수 있어요.");
    const known=new Set(knownTrackIds);
    let unavailable=0;
+   let repeatedIds=0;
+   let duplicated=0;
    const imported:PortablePlaylist[]=data.playlists.map((item:unknown)=>{
     if(!item||typeof item!=="object"||Array.isArray(item))throw new Error("재생목록 데이터가 올바르지 않아요.");
     const p=item as Record<string,unknown>;
     if(typeof p.name!=="string"||!p.name.trim()||p.name.length>50||!Array.isArray(p.trackIds)||p.trackIds.length>MAX_TRACKS||!p.trackIds.every(id=>typeof id==="string"))throw new Error("재생목록 이름 또는 곡 목록이 올바르지 않아요.");
     const ids=[...new Set(p.trackIds as string[])];
+    repeatedIds+=(p.trackIds as string[]).length-ids.length;
     unavailable+=ids.filter(id=>!known.has(id)).length;
     return {name:p.name.trim(),trackIds:ids.filter(id=>known.has(id))};
    });
-   onImport(imported);
-   setMessage(`${imported.length}개 재생목록을 가져왔어요.${unavailable?` 현재 라이브러리에 없는 ${unavailable}곡은 제외했어요.`:""}`);
+   const knownSignatures=new Set(playlists.map(signature));
+   const unique=imported.filter(p=>{
+    const sig=signature(p);
+    if(knownSignatures.has(sig)){duplicated++;return false;}
+    knownSignatures.add(sig);return true;
+   });
+   if(unique.length)onImport(unique);
+   setMessage(`${unique.length}개 재생목록을 추가했어요.${duplicated?` 중복 ${duplicated}개는 건너뛰었어요.`:""}${unavailable?` 라이브러리에 없는 ${unavailable}곡은 제외했어요.`:""}${repeatedIds?` 반복된 곡 ID ${repeatedIds}개를 정리했어요.`:""}`);
   }catch(error){setMessage(error instanceof Error?error.message:"파일을 읽지 못했어요.");}
   finally{setBusy(false);if(input.current)input.current.value="";}
  };
