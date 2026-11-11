@@ -73,3 +73,18 @@ Verification: `npm run typecheck` and `npm run build`. Browser visual, keyboard 
 
 ## Next implementation slice
 **P0: playback state feedback.** Cover audio initialization/resume failures and player/library loading and empty states. Complete keyboard, narrow-screen and continuous-playback browser checks from Phase 1 in a compatible preview environment before marking that phase done.
+
+
+## November 2026 implementation progress (feature branch)
+
+- [x] P0: asynchronous Web Audio startup and resume failure feedback; client-library hydration/empty states and discovery reset.
+- [x] P1: original timed instrumental-demo captions, keyboard-operated lyrics tab and no-lyrics fallback. No copyrighted vocals/lyrics.
+- [x] P1: liked-library search and clearer discovery empty state.
+- [x] P2: deduplicated portable JSON import with missing/duplicate reporting; metadata-only CSV matching into existing playable demo IDs.
+- [x] P3 code: opt-in authenticated demo-room client, host publishing, guest sync with bounded drift, leave/close and host removal, SQL schema plus RLS rules.
+- [ ] P3 deployment: review and apply the SQL migration to the intended database and complete multi-user end-to-end testing.
+- [ ] Licensed commercial catalog and third-party service import APIs, which require provider agreements and user authorization.
+- [ ] Account-backed private playlists and server-side personalization, which require a separate schema and migration.
+- [ ] Browser keyboard, mobile, autoplay and screen-reader acceptance verification; passing a compiler does not establish accessibility conformance.
+
+Production feature flags and permissions must be reviewed before rooms are offered publicly. The UI handles unavailable room infrastructure without claiming room availability.
