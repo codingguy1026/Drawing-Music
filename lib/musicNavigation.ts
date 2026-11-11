@@ -1,4 +1,4 @@
-export const MUSIC_VIEWS = ["home","albums","mixes","for-you","discover","library","visualizer","connection"] as const;
+export const MUSIC_VIEWS = ["home","albums","mixes","for-you","discover","library","visualizer","rooms","connection"] as const;
 export type MusicView = typeof MUSIC_VIEWS[number];
 export const MUSIC_INFO:Record<MusicView,{title:string;subtitle:string}>={
  home:{title:"홈",subtitle:"당신의 하루에 음악으로 색을 칠해요."},
@@ -8,6 +8,7 @@ export const MUSIC_INFO:Record<MusicView,{title:string;subtitle:string}>={
  discover:{title:"음악 탐색",subtitle:"데모곡을 검색하고 새로운 음악을 발견해요."},
  library:{title:"내 보관함",subtitle:"좋아하는 곡과 플레이리스트를 정리해요."},
  visualizer:{title:"사운드 시각화",subtitle:"음표를 색과 리듬으로 만나보세요."},
+ rooms:{title:"함께 듣기",subtitle:"동의하고 참여하는 오리지널 데모 음악 방."},
  connection:{title:"Drawing 연결",subtitle:"Drawing 생태계와의 연동을 준비 중이에요."}
 };
 export const musicHref=(view:MusicView)=>"#/"+view;

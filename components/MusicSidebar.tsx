@@ -1,12 +1,12 @@
 "use client";
-import {AudioLines,Compass,Disc3,Heart,Home,ListMusic,Orbit,Radio,Sparkles,Waves} from "lucide-react";
+import {AudioLines,Compass,Disc3,Heart,Home,ListMusic,Orbit,Radio,Sparkles,Waves,Users} from "lucide-react";
 import type {DemoTrack} from "../lib/demoTracks";
 import {MUSIC_INFO,musicHref,type MusicView} from "../lib/musicNavigation";
 type Props={active:DemoTrack;playing:boolean;likedCount:number;playlistCount:number;view:MusicView};
 const NAV=[
  {id:"home",icon:Home},{id:"albums",icon:Disc3},{id:"mixes",icon:Radio},
  {id:"for-you",icon:Sparkles},{id:"discover",icon:Compass},{id:"library",icon:ListMusic},
- {id:"visualizer",icon:Waves},{id:"connection",icon:Orbit}
+ {id:"visualizer",icon:Waves},{id:"rooms",icon:Users},{id:"connection",icon:Orbit}
 ] as const;
 export default function MusicSidebar({active,playing,likedCount,playlistCount,view}:Props){
  return <>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./drawing-id.css";
+import "./liner.css";
 import DrawingIdAuth from "../components/DrawingIdAuth";
 
 export const metadata: Metadata = {

@@ -14,15 +14,18 @@ export class DemoAudioEngine {
   private scheduler: number | null = null;
   private voices: Set<OscillatorNode> = new Set();
   private volume = 0.65;
+  private command = 0;
 
-  private ensureContext(): AudioContext {
+  private async ensureContext(): Promise<AudioContext> {
     if (!this.context) {
+      if (typeof AudioContext === "undefined") throw new Error("Web Audio is unavailable");
       this.context = new AudioContext();
       this.master = this.context.createGain();
       this.master.connect(this.context.destination);
       this.setVolume(this.volume);
     }
-    void this.context.resume();
+    if (this.context.state !== "running") await this.context.resume();
+    if (this.context.state !== "running") throw new Error("Audio could not start");
     return this.context;
   }
 
@@ -87,8 +90,10 @@ export class DemoAudioEngine {
     }
   };
 
-  play(track: DemoTrack, position = 0): void {
-    const ctx = this.ensureContext();
+  async play(track: DemoTrack, position = 0): Promise<void> {
+    const command = ++this.command;
+    const ctx = await this.ensureContext();
+    if (command !== this.command) return;
     this.haltVoices();
     this.track = track;
     this.offset = Math.min(track.duration, Math.max(0, position));
@@ -101,24 +106,35 @@ export class DemoAudioEngine {
   }
 
   pause(): void {
+    ++this.command;
     if (!this.playing) return;
     this.offset = this.getPosition();
     this.playing = false;
     this.haltVoices();
   }
 
-  resume(): void {
-    if (this.track) this.play(this.track, this.offset);
+  /** Select a demo track without creating or resuming an audio context. */
+  select(track:DemoTrack,position=0):void {
+    ++this.command;
+    this.haltVoices();
+    this.playing=false;
+    this.track=track;
+    this.offset=Math.min(track.duration,Math.max(0,position));
   }
 
-  seek(position: number): void {
+  async resume(): Promise<void> {
+    if (this.track) await this.play(this.track, this.offset);
+  }
+
+  async seek(position: number): Promise<void> {
     if (!this.track) return;
     const next = Math.max(0, Math.min(this.track.duration, position));
-    if (this.playing) this.play(this.track, next);
+    if (this.playing) await this.play(this.track, next);
     else this.offset = next;
   }
 
   dispose(): void {
+    ++this.command;
     this.haltVoices();
     this.playing = false;
     if (this.context) void this.context.close();

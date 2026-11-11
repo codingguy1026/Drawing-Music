@@ -104,3 +104,18 @@ Configure BOTH `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_
 In **Library → My Playlists**, export your browser-local playlists as a `drawing-music-playlists.json` file and import the file later. Import adds new playlists without overwriting existing ones. Only track IDs from the current original demo library are restored; missing tracks are reported and skipped. Backups contain playlist names and demo track IDs, not audio, credentials, or listening history. This is **not** Spotify/Apple Music importing or a licensed music catalog.
 
 Import accepts the versioned `drawing-music-playlists` JSON format (up to 1 MB, 100 playlists, 5,000 track IDs per playlist). This feature is independently implemented and does not reuse Liner code.
+
+
+## Liner-inspired independent feature slice (November 2026)
+
+The [roadmap](docs/liner-benchmark-roadmap.md) is implemented as DMUSIC-original code without copying Liner's source, assets or recordings.
+
+- **Player reliability:** asynchronous Web Audio startup and resume failures show understandable feedback; the original synthesized playback remains unchanged.
+- **Timed creative captions:** the Now Playing panel has keyboard-accessible tabs for queue, original timed demo captions and track details. The captions are new text associated with some instrumental tracks; there are **no recorded vocals**. Other tracks show a no-lyrics state.
+- **Discovery:** search reset, liked-song filtering and library loading/empty feedback.
+- **Playlist portability:** JSON import reports skipped duplicate lists, repeated track IDs and unknown IDs. A local, **metadata-only** CSV importer matches title + artist against the six original DMUSIC demo tracks; unrecognized commercial songs are not playable.
+- **Listening rooms (requires deployment configuration):** signed-in, opt-in participation; pseudonymous participant IDs; host playback sync, room closing and participant removal; per-device playback through the local demo engine. Polling-based sync tolerates limited latency. No real audio or third-party recordings are sent between users.
+
+**Room database setup is NOT automatically applied.** Review and apply `supabase/migrations/20261111000000_liner_listening_rooms.sql` to the intended Drawing ID database before using rooms. RLS policies are part of that migration; never disable RLS to work around setup errors. Existing accounts and authentication configuration are not modified. Multi-user, mobile, browser autoplay and security acceptance testing are still needed before launch.
+
+Commercial streaming catalogs, third-party lyrics, Spotify/Apple Music playlist API ingestion and server-backed personal libraries remain unimplemented because they depend on explicit provider permissions, rights and additional backend work. An existing external library list is not a playback license.
