@@ -9,6 +9,7 @@ import NowPlayingPanel from "../components/NowPlayingPanel";
 import MusicSidebar from "../components/MusicSidebar";
 import PlaylistTransfer, {type PortablePlaylist} from "../components/PlaylistTransfer";
 import MetadataPlaylistImport from "../components/MetadataPlaylistImport";
+import ListeningRooms,{type RoomPlayback} from "../components/ListeningRooms";
 import ListeningHub from "../components/ListeningHub";
 import {MUSIC_INFO,musicViewFromHash,type MusicView} from "../lib/musicNavigation";
 type Playlist={id:string;name:string;trackIds:string[]};
@@ -100,6 +101,32 @@ export default function MusicHome(){
  const genres=useMemo(()=>["전체",...new Set(DEMO_TRACKS.map(t=>t.genre))],[]);
  const likedTracks=useMemo(()=>DEMO_TRACKS.filter(t=>liked.includes(t.id)&&[t.title,t.artist,t.album].some(v=>v.toLocaleLowerCase().includes(libraryQuery.trim().toLocaleLowerCase()))),[liked,libraryQuery]);
  const tracks=useMemo(()=>DEMO_TRACKS.filter(t=>(mood==="전체"||t.mood===mood)&&(genre==="전체"||t.genre===genre)&&[t.title,t.artist,t.album,t.genre,t.mood].some(s=>s.toLowerCase().includes(query.trim().toLowerCase()))),[mood,genre,query]);
+ const playbackState=useRef({activeId,progress,playing});
+ playbackState.current={activeId,progress,playing};
+ const onRemotePlayback=useCallback((remote:RoomPlayback)=>{
+  const target=DEMO_TRACKS.find(t=>t.id===remote.trackId);
+  if(!target)return;
+  const current=playbackState.current;
+  if(current.activeId!==target.id){
+   if(remote.playing){void playTrack(target,remote.position);}
+   else {
+    if(!engine.current)engine.current=new DemoAudioEngine();
+    engine.current.select(target,remote.position);
+    setActiveId(target.id);setProgress(remote.position);setPlaying(false);
+   }
+   return;
+  }
+  if(Math.abs(current.progress-remote.position)>2){
+   setProgress(remote.position);
+   void engine.current?.seek(remote.position).catch(()=>setNotice("방 재생 위치를 동기화하지 못했어요."));
+  }
+  if(remote.playing&&!current.playing){
+   if(engine.current){void engine.current.resume().then(()=>setPlaying(true)).catch(()=>setNotice("자동 재생이 차단됐어요. 직접 재생 버튼을 눌러 주세요."));}
+   else void playTrack(target,remote.position);
+  }else if(!remote.playing&&current.playing){
+   engine.current?.pause();setPlaying(false);
+  }
+ },[playTrack]);
  const wave=Array.from({length:42},(_,i)=>18+((Math.round(active.notes[i%active.notes.length]*7)+i*19)%74));
  return <div className={dark?"classic dark":"classic"}>
   <header className="classic-header"><a href="#/home" className="classic-brand"><span className="classic-brand-mark"><AudioLines size={20}/></span><span>Drawing <strong>Music</strong></span></a><nav aria-label="사이트 메뉴"><a href="#/for-you">추천</a><a href="#/discover">탐색</a><a href="#/library">보관함</a><a href="#/connection">연동</a><button className="classic-theme-toggle" onClick={()=>setDark(v=>!v)} aria-label={dark?"라이트 모드":"다크 모드"}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button></nav></header>
@@ -142,6 +169,7 @@ export default function MusicHome(){
       {selectedList&&<div className="classic-selected"><div className="classic-selected-head"><strong>{selectedList.name}</strong><button onClick={()=>{if(window.confirm("재생목록을 삭제할까요?")){setPlaylists(old=>old.filter(p=>p.id!==selected));setSelected(null)}}} aria-label="재생목록 삭제"><Trash2 size={17}/></button></div>
       {selectedList.trackIds.length?selectedList.trackIds.map(id=>{const t=DEMO_TRACKS.find(x=>x.id===id);return t?<div key={id} className="classic-mini-row"><button onClick={()=>playDirect(t)}><Play size={14}/>{t.title}</button><button aria-label={t.title+" 제거"} onClick={()=>setPlaylists(old=>old.map(p=>p.id===selected?{...p,trackIds:p.trackIds.filter(x=>x!==id)}:p))}><X size={15}/></button></div>:null}):<p className="classic-empty">음악 목록에서 + 버튼으로 곡을 추가하세요.</p>}</div>}</div></div>
     </section>}
+    <div className="dm-room-view" hidden={view!=="rooms"}><ListeningRooms track={active} progress={progress} playing={playing} onRemotePlayback={onRemotePlayback}/></div>
     {view==="visualizer"&&<section id="visualizer" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DRAW THE SOUND</span><h2>음악을 그리다.</h2><p>재생 중인 데모 멜로디를 색과 리듬으로 표현해요.</p></div></div><div className="classic-visual"><div className="classic-visual-top"><AudioLines size={20}/><span>{active.title} · {playing?"재생 중":"일시정지"}</span></div><div className="classic-wave" aria-label="데모 음표를 기반으로 만든 시각화">{wave.map((h,i)=><span key={i} className={playing?"moving":""} style={{height:h+"%",animationDelay:(i%8)*-.11+"s"}}/>)}</div><small>실제 음원 파형 분석이 아닌 음표 데이터 기반 시각화입니다.</small></div></section>}
     {view==="connection"&&<section id="connection" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DRAWING ECOSYSTEM</span><h2>Drawing Verse 연동</h2><p>음악 유니버스와 현재 듣는 음악 공유 기능을 준비하고 있어요.</p></div></div><div className="classic-connection"><Orbit size={26}/><div><strong>Drawing Verse × Drawing Music</strong><p>계정 연동과 프로필 활동 표시는 아직 연결되지 않았습니다.</p></div>{verseUrl?<a href={verseUrl} target="_blank" rel="noopener noreferrer">Drawing Verse ↗</a>:<span>연동 준비 중</span>}</div></section>}
    </div>
