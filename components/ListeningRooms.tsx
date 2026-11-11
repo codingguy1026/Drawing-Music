@@ -120,6 +120,9 @@ export default function ListeningRooms({track,progress,playing,onRemotePlayback}
   if(!db||!current||!userId||current.host_id===userId)return;
   let alive=true;
   const poll=async()=>{
+   const membership=await db.from("dm_room_members").select("room_id").eq("room_id",current.id).eq("user_id",userId).maybeSingle();
+   if(!alive)return;
+   if(membership.error||!membership.data){setCurrent(null);setMessage("이 방의 참여 권한이 종료됐어요.");return;}
    const {data,error}=await db.from("dm_listening_rooms")
     .select("id,host_id,title,track_id,position_seconds,playing,active,updated_at").eq("id",current.id).maybeSingle();
    if(!alive)return;
