@@ -22,3 +22,29 @@
  .np-lyrics{max-height:none;min-height:160px}
  .np-tabs button{font-size:11px;padding:11px 6px}
 }
+
+/* Authenticated, opt-in original-demo listening rooms */
+.dm-room-view[hidden]{display:none!important}
+.dm-room-shell{padding:24px;max-width:900px;margin:0 auto 30px;border:1px solid rgba(135,105,166,.25);border-radius:22px;background:rgba(125,103,145,.09);color:inherit}
+.dm-room-shell header h2{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.dm-room-shell header p{font-size:13px;line-height:1.7;opacity:.78}
+.dm-room-shell button{border:1px solid rgba(125,103,145,.4);border-radius:10px;min-height:42px;padding:8px 13px;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.dm-room-shell button:hover:not(:disabled){background:rgba(130,115,160,.18)}
+.dm-room-shell button:disabled{opacity:.5}
+.dm-room-shell input[type=text],.dm-room-shell input:not([type]){display:block;max-width:500px;width:100%;margin-top:8px;background:transparent;border:1px solid rgba(128,128,128,.35);border-radius:10px;color:inherit;padding:11px;font:inherit}
+.dm-room-create{display:grid;gap:12px;margin:22px 0}
+.dm-room-create>label:first-child{font-weight:600}
+.dm-room-consent{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.6;max-width:720px}
+.dm-room-consent input{width:18px;height:18px;flex:none}
+.dm-room-create>button{justify-self:start}
+.dm-room-list-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dm-room-list-head h3{margin:0}
+.dm-room-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid rgba(125,103,145,.23)}
+.dm-room-item span{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.dm-room-item strong{overflow-wrap:anywhere}
+.dm-room-item small{opacity:.7}
+.dm-room-current{margin-top:18px;display:grid;justify-items:start;gap:10px}
+.dm-room-current h3,.dm-room-current p{margin:0}
+.dm-room-members{width:100%;margin-top:14px;border-top:1px solid rgba(128,128,128,.25);padding-top:12px}
+.dm-room-members>div{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+@media(max-width:600px){.dm-room-shell{padding:16px}.dm-room-item{align-items:flex-start;flex-direction:column}.dm-room-item span{width:100%}}
