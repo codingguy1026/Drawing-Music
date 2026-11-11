@@ -8,6 +8,7 @@ import VibeDiscovery from "../components/VibeDiscovery";
 import NowPlayingPanel from "../components/NowPlayingPanel";
 import MusicSidebar from "../components/MusicSidebar";
 import PlaylistTransfer, {type PortablePlaylist} from "../components/PlaylistTransfer";
+import MetadataPlaylistImport from "../components/MetadataPlaylistImport";
 import ListeningHub from "../components/ListeningHub";
 import {MUSIC_INFO,musicViewFromHash,type MusicView} from "../lib/musicNavigation";
 type Playlist={id:string;name:string;trackIds:string[]};
@@ -16,6 +17,9 @@ const moods=["전체","편안","밤","집중","에너지","우주"];
 const verseUrl=process.env.NEXT_PUBLIC_DRAWING_VERSE_URL?.trim()||"";
 export default function MusicHome(){
  const engine=useRef<DemoAudioEngine|null>(null);
+ const playCommand=useRef(0);
+ const [audioBusy,setAudioBusy]=useState(false);
+ const [libraryQuery,setLibraryQuery]=useState("");
  const [activeId,setActiveId]=useState(DEMO_TRACKS[0].id),[playing,setPlaying]=useState(false),[progress,setProgress]=useState(0),[volume,setVolume]=useState(65);
  const [liked,setLiked]=useState<string[]>([]),[playlists,setPlaylists]=useState<Playlist[]>([]),[recent,setRecent]=useState<string[]>([]);
  const [hydrated,setHydrated]=useState(false),[dark,setDark]=useState(false),[query,setQuery]=useState(""),[mood,setMood]=useState("전체"),[genre,setGenre]=useState("전체");
@@ -40,20 +44,61 @@ export default function MusicHome(){
   setDark(localStorage.getItem("dmusic:classic-theme")==="dark");
  }catch{}setHydrated(true);return()=>engine.current?.dispose()},[]);
  useEffect(()=>{if(!hydrated)return;try{localStorage.setItem("dmusic:liked",JSON.stringify(liked));localStorage.setItem("dmusic:playlists",JSON.stringify(playlists));localStorage.setItem("dmusic:recent",JSON.stringify(recent));localStorage.setItem("dmusic:classic-theme",dark?"dark":"light")}catch{}},[liked,playlists,recent,dark,hydrated]);
- const playTrack=useCallback((track:DemoTrack,position=0)=>{try{if(!engine.current)engine.current=new DemoAudioEngine();engine.current.setVolume(volume/100);engine.current.play(track,position);setActiveId(track.id);setProgress(position);setPlaying(true);setRecent(old=>[track.id,...old.filter(id=>id!==track.id)].slice(0,8));setNotice("")}catch{setNotice("이 브라우저에서는 오디오를 재생할 수 없어요.")}},[volume]);
+ const playTrack=useCallback(async (track:DemoTrack,position=0)=>{
+  const command=++playCommand.current;
+  setAudioBusy(true);
+  setPlaying(false);
+  try{
+   if(!engine.current)engine.current=new DemoAudioEngine();
+   engine.current.setVolume(volume/100);
+   await engine.current.play(track,position);
+   if(command!==playCommand.current)return;
+   setActiveId(track.id);setProgress(position);setPlaying(true);
+   setRecent(old=>[track.id,...old.filter(id=>id!==track.id)].slice(0,8));
+   setNotice("");
+  }catch{
+   if(command!==playCommand.current)return;
+   setPlaying(false);
+   setNotice("오디오를 시작하지 못했어요. 브라우저 소리 설정을 확인한 뒤 다시 재생해 주세요.");
+  }finally{if(command===playCommand.current)setAudioBusy(false);}
+ },[volume]);
  const next=useCallback((automatic=false)=>{if(automatic&&repeat==="one"){playTrack(active);return}const list=queue.length?queue:DEMO_TRACKS;const i=Math.max(0,list.findIndex(t=>t.id===active.id));if(automatic&&!shuffle&&i===list.length-1&&repeat==="off"){engine.current?.pause();setPlaying(false);setProgress(active.duration);return}const index=shuffle&&list.length>1?(i+1+Math.floor(Math.random()*(list.length-1)))%list.length:(i+1)%list.length;playTrack(list[index])},[active,repeat,shuffle,playTrack,queue]);
  useEffect(()=>{if(!playing)return;const id=window.setInterval(()=>{const p=engine.current?.getPosition()??0;setProgress(p);if(p>=active.duration-.06)next(true)},250);return()=>clearInterval(id)},[playing,active.duration,next]);
- const toggle=()=>{if(playing){engine.current?.pause();setProgress(engine.current?.getPosition()??progress);setPlaying(false)}else if(engine.current&&progress<active.duration){engine.current.resume();setPlaying(true)}else playTrack(active)};
+ const toggle=()=>{
+  if(audioBusy)return;
+  if(playing){playCommand.current++;engine.current?.pause();setProgress(engine.current?.getPosition()??progress);setPlaying(false);}
+  else if(engine.current&&progress<active.duration){
+   const command=++playCommand.current;setAudioBusy(true);
+   void engine.current.resume().then(()=>{
+    if(command===playCommand.current){setPlaying(true);setNotice("");}
+   }).catch(()=>{if(command===playCommand.current){setPlaying(false);setNotice("오디오를 다시 시작할 수 없어요. 재생 버튼을 다시 눌러 주세요.");}})
+   .finally(()=>{if(command===playCommand.current)setAudioBusy(false);});
+  }else void playTrack(active);
+ };
  const previous=()=>{if(progress>3){engine.current?.seek(0);setProgress(0);return}const list=queue.length?queue:DEMO_TRACKS;const i=Math.max(0,list.findIndex(t=>t.id===active.id));playTrack(list[(i-1+list.length)%list.length])};
  const playDirect=(track:DemoTrack)=>{setQueueIds(null);playTrack(track)};
  const playCollection=(items:DemoTrack[])=>{if(!items.length)return;setQueueIds(items.map(t=>t.id));playTrack(items[0])};
- const seek=(n:number)=>{engine.current?.seek(n);setProgress(n)};
+ const seek=(n:number)=>{
+  setProgress(n);
+  void engine.current?.seek(n).catch(()=>{setPlaying(false);setNotice("이 위치로 이동하지 못했어요. 다시 재생해 주세요.");});
+ };
  const changeVolume=(value:number)=>{setVolume(value);engine.current?.setVolume(value/100)};
  const toggleLike=(id:string)=>setLiked(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id]);
  const createList=()=>{const name=newName.trim().slice(0,50);if(!name)return;const id="list-"+Date.now().toString(36);setPlaylists(old=>[...old,{id,name,trackIds:addId?[addId]:[]}]);setSelected(id);setNewName("");setAddId(null)};
  const addTo=(listId:string,trackId:string)=>{setPlaylists(old=>old.map(p=>p.id===listId?{...p,trackIds:p.trackIds.includes(trackId)?p.trackIds:[...p.trackIds,trackId]}:p));setAddId(null);setNotice("재생목록에 추가했어요.")};
- const importLists=(items:PortablePlaylist[])=>{const stamp=Date.now().toString(36);setPlaylists(old=>[...old,...items.map((p,index)=>({id:`import-${stamp}-${index}`,name:p.name,trackIds:p.trackIds}))]);};
+ const importLists=(items:PortablePlaylist[])=>{
+  const stamp=Date.now().toString(36);
+  setPlaylists(old=>{
+   const seen=new Set(old.map(p=>JSON.stringify([p.name.trim().toLocaleLowerCase(),[...p.trackIds].sort()])));
+   const next=items.filter(p=>{
+    const signature=JSON.stringify([p.name.trim().toLocaleLowerCase(),[...new Set(p.trackIds)].sort()]);
+    if(seen.has(signature))return false;seen.add(signature);return true;
+   });
+   return [...old,...next.map((p,index)=>({id:`import-${stamp}-${index}`,name:p.name,trackIds:p.trackIds}))];
+  });
+ };
  const genres=useMemo(()=>["전체",...new Set(DEMO_TRACKS.map(t=>t.genre))],[]);
+ const likedTracks=useMemo(()=>DEMO_TRACKS.filter(t=>liked.includes(t.id)&&[t.title,t.artist,t.album].some(v=>v.toLocaleLowerCase().includes(libraryQuery.trim().toLocaleLowerCase()))),[liked,libraryQuery]);
  const tracks=useMemo(()=>DEMO_TRACKS.filter(t=>(mood==="전체"||t.mood===mood)&&(genre==="전체"||t.genre===genre)&&[t.title,t.artist,t.album,t.genre,t.mood].some(s=>s.toLowerCase().includes(query.trim().toLowerCase()))),[mood,genre,query]);
  const wave=Array.from({length:42},(_,i)=>18+((Math.round(active.notes[i%active.notes.length]*7)+i*19)%74));
  return <div className={dark?"classic dark":"classic"}>
@@ -85,14 +130,14 @@ export default function MusicHome(){
         onPlay={playDirect} onPlayCollection={playCollection} onLike={toggleLike} onAdd={setAddId}/>}
     {view==="for-you"&&<VibeDiscovery tracks={DEMO_TRACKS} liked={liked} recent={recent} onPlay={playDirect} onLike={toggleLike}/>}
     {view==="discover"&&<section id="discover" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">DISCOVER</span><h2>음악 탐색</h2><p>Drawing Music의 오리지널 데모 음악을 만나보세요.</p></div><span className="classic-counter">{tracks.length}곡</span></div>
-     <div className="classic-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡명, 아티스트, 장르 검색" aria-label="음악 검색"/></div>
+     <div className="classic-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡명, 아티스트, 장르 검색" aria-label="음악 검색"/>{query&&<button className="classic-search-clear" type="button" onClick={()=>setQuery("")} aria-label="음악 검색어 지우기">지우기</button>}</div>
      <div className="classic-filters">{moods.map(m=><button key={m} className={mood===m?"selected":""} onClick={()=>setMood(m)}>{m}</button>)}</div>
      <div className="classic-filters genres">{genres.map(g=><button key={g} className={genre===g?"selected":""} onClick={()=>setGenre(g)}>{g}</button>)}</div>
-     <div className="classic-tracks">{tracks.length?tracks.map(t=><article className="classic-track" key={t.id}><button className="classic-track-main" onClick={()=>playDirect(t)}><AlbumArt track={t} compact className="classic-art"/><span><strong>{t.title}</strong><small>{t.artist} · {t.album}</small></span></button><span className="classic-track-mood">{t.mood} · {t.genre}</span><span className="classic-duration">{displayTime(t.duration)}</span><button className={liked.includes(t.id)?"liked":""} aria-label={t.title+" 좋아요"} onClick={()=>toggleLike(t.id)}><Heart size={19} fill={liked.includes(t.id)?"currentColor":"none"}/></button><button aria-label={t.title+" 재생목록에 추가"} onClick={()=>setAddId(t.id)}><Plus size={19}/></button></article>):<p className="classic-empty">검색 결과가 없어요.</p>}</div>
+     <div className="classic-tracks">{tracks.length?tracks.map(t=><article className="classic-track" key={t.id}><button className="classic-track-main" onClick={()=>playDirect(t)}><AlbumArt track={t} compact className="classic-art"/><span><strong>{t.title}</strong><small>{t.artist} · {t.album}</small></span></button><span className="classic-track-mood">{t.mood} · {t.genre}</span><span className="classic-duration">{displayTime(t.duration)}</span><button className={liked.includes(t.id)?"liked":""} aria-label={t.title+" 좋아요"} onClick={()=>toggleLike(t.id)}><Heart size={19} fill={liked.includes(t.id)?"currentColor":"none"}/></button><button aria-label={t.title+" 재생목록에 추가"} onClick={()=>setAddId(t.id)}><Plus size={19}/></button></article>):<div className="classic-discovery-empty" role="status"><p>조건에 맞는 데모곡이 없어요.</p><button type="button" onClick={()=>{setQuery("");setMood("전체");setGenre("전체")}}>검색과 필터 초기화</button></div>}</div>
     </section>}
     {view==="library"&&<section id="library" className="classic-section"><div className="classic-section-head"><div><span className="classic-kicker">YOUR LIBRARY</span><h2>내 보관함</h2><p>좋아하는 음악과 재생목록을 한곳에.</p></div></div>
-     <div className="classic-library"><div className="classic-panel"><h3><Heart size={18}/> 좋아하는 음악 <span>{liked.length}</span></h3>{liked.length?DEMO_TRACKS.filter(t=>liked.includes(t.id)).map(t=><button className="classic-mini" key={t.id} onClick={()=>playDirect(t)}><Play size={15}/>{t.title}</button>):<p className="classic-empty">음악 옆의 하트를 눌러 담아보세요.</p>}</div>
-      <div className="classic-panel"><h3><ListMusic size={18}/> 내 플레이리스트</h3><PlaylistTransfer playlists={playlists} knownTrackIds={DEMO_TRACKS.map(t=>t.id)} onImport={importLists}/><form className="classic-newlist" onSubmit={e=>{e.preventDefault();createList()}}><input value={newName} onChange={e=>setNewName(e.target.value)} maxLength={50} placeholder="새 재생목록 이름" aria-label="새 재생목록 이름"/><button type="submit" disabled={!newName.trim()}><Plus size={17}/> 만들기</button></form>
+     <div className="classic-library"><div className="classic-panel"><h3><Heart size={18}/> 좋아하는 음악 <span>{liked.length}</span></h3><input className="dm-filter-input" type="search" value={libraryQuery} onChange={e=>setLibraryQuery(e.target.value)} placeholder="좋아요에서 검색" aria-label="좋아요 곡 검색"/>{!hydrated?<p className="classic-empty" role="status">보관함을 불러오는 중이에요...</p>:likedTracks.length?likedTracks.map(t=><button className="classic-mini filtered" key={t.id} onClick={()=>playDirect(t)}><Play size={15}/>{t.title}</button>):<p className="classic-empty">{liked.length?"검색한 좋아요 곡이 없어요.":"음악 옆의 하트를 눌러 담아보세요."}</p>}</div>
+      <div className="classic-panel"><h3><ListMusic size={18}/> 내 플레이리스트</h3><PlaylistTransfer playlists={playlists} knownTrackIds={DEMO_TRACKS.map(t=>t.id)} onImport={importLists}/><MetadataPlaylistImport tracks={DEMO_TRACKS} onImport={importLists}/><form className="classic-newlist" onSubmit={e=>{e.preventDefault();createList()}}><input value={newName} onChange={e=>setNewName(e.target.value)} maxLength={50} placeholder="새 재생목록 이름" aria-label="새 재생목록 이름"/><button type="submit" disabled={!newName.trim()}><Plus size={17}/> 만들기</button></form>
       <div className="classic-list-tabs">{playlists.map(p=><button key={p.id} className={selected===p.id?"selected":""} onClick={()=>setSelected(p.id)}>{p.name} ({p.trackIds.length})</button>)}</div>
       {selectedList&&<div className="classic-selected"><div className="classic-selected-head"><strong>{selectedList.name}</strong><button onClick={()=>{if(window.confirm("재생목록을 삭제할까요?")){setPlaylists(old=>old.filter(p=>p.id!==selected));setSelected(null)}}} aria-label="재생목록 삭제"><Trash2 size={17}/></button></div>
       {selectedList.trackIds.length?selectedList.trackIds.map(id=>{const t=DEMO_TRACKS.find(x=>x.id===id);return t?<div key={id} className="classic-mini-row"><button onClick={()=>playDirect(t)}><Play size={14}/>{t.title}</button><button aria-label={t.title+" 제거"} onClick={()=>setPlaylists(old=>old.map(p=>p.id===selected?{...p,trackIds:p.trackIds.filter(x=>x!==id)}:p))}><X size={15}/></button></div>:null}):<p className="classic-empty">음악 목록에서 + 버튼으로 곡을 추가하세요.</p>}</div>}</div></div>
@@ -105,6 +150,7 @@ export default function MusicHome(){
    <div className="classic-player-center"><div className="classic-controls"><button aria-label="셔플" aria-pressed={shuffle} className={shuffle?"selected":""} onClick={()=>setShuffle(v=>!v)}><Shuffle size={16}/></button><button aria-label="이전 곡" onClick={previous}><SkipBack size={18}/></button><button className="classic-play" aria-label={playing?"일시정지":"재생"} onClick={toggle}>{playing?<Pause size={20} fill="currentColor"/>:<Play size={20} fill="currentColor"/>}</button><button aria-label="다음 곡" onClick={()=>next()}><SkipForward size={18}/></button><button aria-label={(repeat==="off"?"반복 없음":repeat==="all"?"전체 반복":"한 곡 반복")+", 다음 모드: "+(repeat==="off"?"전체 반복":repeat==="all"?"한 곡 반복":"반복 없음")} className={repeat!=="off"?"selected":""} onClick={()=>setRepeat(r=>r==="off"?"all":r==="all"?"one":"off")}><Repeat2 size={16}/>{repeat==="one"&&<sup>1</sup>}</button></div><div className="classic-seek"><span>{displayTime(progress)}</span><input type="range" aria-label="재생 위치" aria-valuetext={displayTime(progress)+" / "+displayTime(active.duration)} min={0} max={active.duration} step={.1} value={Math.min(progress,active.duration)} onChange={e=>seek(Number(e.target.value))}/><span>{displayTime(active.duration)}</span></div></div>
    <div className="classic-volume"><Volume2 size={18}/><input aria-label="볼륨" aria-valuetext={volume+"%"} type="range" min={0} max={100} value={volume} onChange={e=>changeVolume(Number(e.target.value))}/></div>
   </footer>
+  {audioBusy&&<div className="classic-notice" role="status">오디오 준비 중...</div>}
   {expanded&&<NowPlayingPanel track={active} queueTracks={queue} progress={progress} playing={playing}
      liked={liked.includes(active.id)} shuffle={shuffle} repeat={repeat}
      volume={volume} onVolume={changeVolume} statusMessage={notice}
