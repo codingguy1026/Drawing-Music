@@ -6,6 +6,7 @@ import { AudioLines, Disc3, Heart, ListMusic, Pause, Play, Repeat2, Shuffle, Ski
 import type { DemoTrack } from "../lib/demoTracks";
 import { DEMO_TRACKS, displayTime } from "../lib/demoTracks";
 import AlbumArt from "./AlbumArt";
+import {currentLyricIndex,getDemoLyrics} from "../lib/demoLyrics";
 
 type Props = {
   track: DemoTrack;
@@ -44,7 +45,7 @@ export default function NowPlayingPanel({
   onPrevious, onNext, onLike, onShuffle, onRepeat, onTrack, queueTracks,
   volume, onVolume, statusMessage,
 }: Props) {
-  const [tab, setTab] = useState<"queue" | "details">("queue");
+  const [tab, setTab] = useState<"queue" | "lyrics" | "details">("queue");
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -61,6 +62,8 @@ export default function NowPlayingPanel({
     };
   }, []);
 
+  const lyricCues = getDemoLyrics(track.id);
+  const currentCue = currentLyricIndex(lyricCues,progress);
   const palette = ALBUM_LIGHT[track.artwork] ?? ALBUM_LIGHT.afterglow;
   const paletteStyle = {
     "--np-glow-rgb": palette.rgb,
@@ -138,12 +141,17 @@ export default function NowPlayingPanel({
               const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
               if (!keys.includes(event.key)) return;
               event.preventDefault();
-              const nextTab = event.key === "Home" ? "queue" : event.key === "End" ? "details" : tab === "queue" ? "details" : "queue";
+              const options = ["queue","lyrics","details"] as const;
+              const index = options.indexOf(tab);
+              const nextTab = event.key === "Home" ? options[0] : event.key === "End" ? options[2]
+                : options[(index + (event.key === "ArrowRight" ? 1 : options.length-1)) % options.length];
               setTab(nextTab);
               document.getElementById("np-tab-" + nextTab)?.focus();
             }}>
               <button className={tab === "queue" ? "selected" : ""} id="np-tab-queue" aria-controls="np-panel-queue" tabIndex={tab === "queue" ? 0 : -1} role="tab" aria-selected={tab === "queue"}
                 onClick={() => setTab("queue")}><ListMusic size={17}/> 대기열</button>
+              <button className={tab === "lyrics" ? "selected" : ""} id="np-tab-lyrics" aria-controls="np-panel-lyrics" tabIndex={tab === "lyrics" ? 0 : -1} role="tab" aria-selected={tab === "lyrics"}
+                onClick={() => setTab("lyrics")}><AudioLines size={17}/> 가사</button>
               <button className={tab === "details" ? "selected" : ""} id="np-tab-details" aria-controls="np-panel-details" tabIndex={tab === "details" ? 0 : -1} role="tab" aria-selected={tab === "details"}
                 onClick={() => setTab("details")}><Disc3 size={17}/> 곡 정보</button>
             </div>
@@ -162,6 +170,18 @@ export default function NowPlayingPanel({
                 <Play size={15}/></button>)}
               {shuffle && <p className="np-queue-disclaimer">셔플을 사용하면 실제 재생 순서가 달라질 수 있어요.</p>}
             </div>
+            <div hidden={tab !== "lyrics"} className="np-lyrics" id="np-panel-lyrics" aria-labelledby="np-tab-lyrics" tabIndex={0} role="tabpanel">
+              <p className="np-lyrics-disclaimer">오리지널 데모 멜로디에 맞춰 만든 창작 가사예요. 이 곡에 녹음된 보컬은 없어요.</p>
+              {lyricCues.length ? <ol className="np-lyric-lines" aria-label="시간 동기화 창작 가사">
+                {lyricCues.map((cue,index) => <li key={cue.start}>
+                  <button type="button" className={index === currentCue ? "np-lyric active" : "np-lyric"}
+                    aria-current={index === currentCue ? "true" : undefined}
+                    onClick={() => onSeek(cue.start)}>
+                    <time>{displayTime(cue.start)}</time><span>{cue.text}</span>
+                  </button>
+                </li>)}
+              </ol> : <p className="np-lyrics-empty">이 데모곡에는 준비된 창작 가사가 없어요. 음악은 그대로 감상할 수 있어요.</p>}
+            </div>
             <div hidden={tab !== "details"} className="np-details" id="np-panel-details" aria-labelledby="np-tab-details" tabIndex={0} role="tabpanel">
               <div className="np-eyebrow">ABOUT THIS TRACK</div>
               <h3>{track.title}</h3>
@@ -173,7 +193,7 @@ export default function NowPlayingPanel({
                 <div><dt>분위기</dt><dd>{track.mood}</dd></div>
                 <div><dt>길이</dt><dd>{displayTime(track.duration)}</dd></div>
               </dl>
-              <div className="np-detail-note">상업 음원 스트리밍과 가사는 아직 제공하지 않아요.</div>
+              <div className="np-detail-note">상업 음원 스트리밍과 상업곡 가사는 제공하지 않아요.</div>
             </div>
           </aside>
         </div>
